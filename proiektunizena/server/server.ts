@@ -2,8 +2,8 @@
 // y que responda a las peticiones con un "Hola Mundo!"
 // Usa el metodo listen de express
 // Tu codigo aqui
-var express = require('express');
-var app = express();
+import express,{Application} from 'express';
+var app: Application = express();
 
 
 
