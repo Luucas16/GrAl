@@ -1,16 +1,23 @@
 {
   "manifest_version": 2,
-  "name": "CaptureExtension",
+  "name": "proiektuizena",
   "version": "1.0",
-  "permissions": ["storage", "activeTab"],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "default-theme@mozilla.org"
+    }
+  },
+
   "browser_action": {
-    
+    "default_title": "proiektuizena"
+  },
   
-    "content_scripts": [
-      {
-        "matches": ["*://*.mozilla.org/*"],
-        "js": ["pluggin.js"]
-      }
-    ]
-  }
+
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["public/pluggin.js"]
+    }
+  ]
 }
