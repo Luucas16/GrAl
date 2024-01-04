@@ -1,9 +1,12 @@
-console.log("loadBegin");
+
 dataAll = new Array();
+localStorage.setItem("state", "notCapturing");
 
+// if (state.capturing) {
+//   console.log("capturing");
 
-window.onload = (function (){
-  console.log("loadBegin");
+  window.onload = (function () {
+    console.log("loadBegin");
     dataAll.push(
       "Start" +
         ":" +
@@ -11,42 +14,27 @@ window.onload = (function (){
         ";" +
         window.location.hostname +
         ";" +
-        Date.now() + "\n"
+        Date.now() +
+        "\n"
     );
-  
-  dataAll.push("pageLoad" + ";" + window.location.href + ";" + Date.now());
-  //alert(dataAll.toString());
-})();
 
-window.onload = (function () {
-  console.log("onloadBegin");
-  console.log("onloadEnd");
-})();
+    dataAll.push("pageLoad" + ";" + window.location.href + ";" + Date.now());
+    //alert(dataAll.toString());
+  })();
 
-document.addEventListener("click", (event) => {
-  dataAll.push(
-    "Click" +
-      event.target +
-      Date.now() + "\n"
-  );
-});
+  document.addEventListener("click", (event) => {
+    dataAll.push("Click" + event.target + Date.now() + "\n");
+  });
 
-document.addEventListener("keyup", (event) => {
-  dataAll.push(
-    "KeyUp" +
-      event.key +
-      ";" +
-      Date.now() + "\n"
-  );
-  if (event.key == "F8") {
-    console.log("F8 sakatuta");
-    dataAll.push("NotFinish" + ";" + Date.now());
-    download();
-    
-  }
-});
-
-
+  document.addEventListener("keyup", (event) => {
+    dataAll.push("KeyUp" + event.key + ";" + Date.now() + "\n");
+    if (event.key == "F8") {
+      console.log("F8 sakatuta");
+      dataAll.push("NotFinish" + ";" + Date.now());
+      download();
+    }
+  });
+// }
 
 function download() {
   const link = document.createElement("a");
@@ -57,4 +45,3 @@ function download() {
   link.click();
   URL.revokeObjectURL(link.href);
 }
-
