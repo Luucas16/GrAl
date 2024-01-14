@@ -1,44 +1,77 @@
-
 dataAll = new Array();
-localStorage.setItem("state", "notCapturing");
 
-// if (state.capturing) {
-//   console.log("capturing");
+var state = { state: "notcapturing" };
+var first = true;
 
-  window.onload = (function () {
-    console.log("loadBegin");
-    dataAll.push(
-      "Start" +
-        ":" +
-        document.title +
-        ";" +
-        window.location.hostname +
-        ";" +
-        Date.now() +
-        "\n"
-    );
+setInterval(function () {
+  fetch("http://localhost:3000/getState", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`Network response was not ok: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      console.log(data);
+      console.log(data.state === 'capturing');
 
-    dataAll.push("pageLoad" + ";" + window.location.href + ";" + Date.now());
-    //alert(dataAll.toString());
-  })();
+      // Verifica si el estado ha cambiado desde la última vez
+      if (data.state !== state.state) {
+        state = data;
+        console.log("State changed:", state.state);
 
-  document.addEventListener("click", (event) => {
-    dataAll.push("Click" + event.target + Date.now() + "\n");
-  });
+        // Verifica si el estado ahora es 'capturing'
+        if (state.state === 'capturing') {
+          console.log("capturing");
 
-  document.addEventListener("keyup", (event) => {
-    dataAll.push("KeyUp" + event.key + ";" + Date.now() + "\n");
-    if (event.key == "F8") {
-      console.log("F8 sakatuta");
-      dataAll.push("NotFinish" + ";" + Date.now());
-      download();
-    }
-  });
-// }
+          console.log("loadBegin");
+          dataAll.push(
+            "Start" +
+              ":" +
+              document.title +
+              ";" +
+              window.location.hostname +
+              ";" +
+              Date.now() +
+              "\n"
+          );
+          dataAll.push("Kargatutako URLa:" + " " + window.location.href + " " + moment(Date.now()).format('YYYY-MM-DD HH:mm:ss') + "\n");
+          first = false;
+
+          document.addEventListener("click", handleClick);
+          document.addEventListener("keyup", handleKeyUp);
+        } else {
+          // Si el estado ya no es 'capturing', elimina los oyentes de eventos
+          document.removeEventListener("click", handleClick);
+          document.removeEventListener("keyup", handleKeyUp);
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Error during fetch:", error);
+    });
+}, 500);
+
+function handleClick(event) {
+  console.log("Click");
+  dataAll.push("Egindako klika: " + event.target + moment(Date.now()).format('YYYY-MM-DD HH:mm:ss') + "\n");
+}
+
+function handleKeyUp(event) {
+  console.log("KeyUp");
+  dataAll.push("Sakatutako Tekla: " + event.key +  moment(Date.now()).format('YYYY-MM-DD HH:mm:ss') + "\n");
+  if (event.key == "F8") {
+    download();
+  }
+}
 
 function download() {
   const link = document.createElement("a");
-  content = "froga";
   const file = new Blob([dataAll.toString()], { type: "text/plain" });
   link.href = URL.createObjectURL(file);
   link.download = "adibidea.txt";

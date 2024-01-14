@@ -18,7 +18,9 @@
   },
 
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "http://*/*",
+    "https://*/*"
   ],
   
   
@@ -26,7 +28,7 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-       "js": ["public/pluggin.js"]
+       "js": ["public/pluggin.js", "public/moment.js"]
     
     }
   ]

@@ -1,12 +1,81 @@
-// import { state } from "./public/utils,js";
-document.addEventListener("DOMContentLoaded", function () {
-  var dropdown = document.getElementById("dropdown");
-  var boton = document.getElementById("miBoton");
+var state = { state: "notcapturing" };
 
+setInterval(function () {
+  fetch("http://localhost:3000/getState", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`Network response was not ok: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      
+      
+        state = data.state;
+        console.log("State changed:", state.state);
+
+        
+    }).catch((error) => {
+      console.error("Error during fetch:", error);
+    });
+}, 500);
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Obtener referencia al botón por su ID
+  var boton = document.getElementById("miBoton");
+  var boton2 = document.getElementById("miBoton2");
+
+  // Agregar un evento clic al botón
   boton.addEventListener("click", function () {
-    var selectedOption = dropdown.options[dropdown.selectedIndex].value;
-    if (selectedOption == "Captura") {
-    state.capturing = true;
-    }
+    // Realizar el fetch al hacer clic en el botón
+    fetch("http://localhost:3000/changeState", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ state: "capturing" }),
+    })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`Error en la solicitud: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      // Manejar la respuesta del servidor aquí
+      console.log("Respuesta del servidor:", data);
+    })
+    .catch((error) => {
+      console.error('Error durante el fetch:', error);
+    });
   });
+
+  boton2.addEventListener("click", function () {
+    fetch("http://localhost:3000/changeState", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ state: "notcapturing" }),
+    })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`Error en la solicitud: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      // Manejar la respuesta del servidor aquí
+      console.log("Respuesta del servidor:", data);
+    })
+    .catch((error) => {
+      console.error('Error durante el fetch:', error);
+    });
+  })
 });
