@@ -4,7 +4,10 @@ var app = express();
 var bodyParser = require('body-parser');
 var cors = require('cors');
 
-var state = { state: "notcapturing" };
+//Gauzen kontrola jarraitzeko aldagaiak
+
+var datos = {state: "notcapturing", lehenengoAldia: true};
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -22,7 +25,12 @@ app.listen(3000, function () {
 
 app.post('/changeState', function (req, res) {
     console.log(req.body);
-    state = req.body;
+    if (req.body.state === "capturing"){
+        datos.lehenengoAldia = false;
+    }else if (req.body.state === "notcapturing"){
+        datos.lehenengoAldia = true;
+    }
+    datos.state = req.body.state;
     res.send('Got a POST request');
     });
 
@@ -30,5 +38,7 @@ app.get('/getState', function (req, res) {
     // console.log("getState");
    
     res.header('Access-Control-Allow-Origin', '*');
-    res.send(state);
+    res.send(datos);
     });
+
+
