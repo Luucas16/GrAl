@@ -20,7 +20,8 @@
   "permissions": [
     "activeTab",
     "http://*/*",
-    "https://*/*"
+    "https://*/*",
+    "storage"
   ],
   
   

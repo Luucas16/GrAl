@@ -23,6 +23,12 @@ setInterval(function () {
     }).catch((error) => {
       console.error("Error during fetch:", error);
     });
+    if(state === 'notcapturing'){
+      document.getElementById("estado").innerHTML = "Ez da informaziorik gordeko";
+
+    }else if(state === 'capturing'){
+      document.getElementById("estado").innerHTML = "Informazioa gordetzen";
+    }
 }, 500);
 
 

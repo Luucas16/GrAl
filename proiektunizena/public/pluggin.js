@@ -1,7 +1,8 @@
-dataAll = new Array();
+var state = { state: "notcapturing" }; // Inicializa el estado
 
-var state = { state: "notcapturing" };
-var first = true;
+var preState = { state: "notcapturing" };
+
+var dataAll = new Array();
 
 setInterval(function () {
   fetch("http://localhost:3000/getState", {
@@ -18,30 +19,49 @@ setInterval(function () {
     })
     .then((data) => {
       console.log(data);
-      console.log(data.state === 'capturing');
+      console.log(state === "capturing");
 
       // Verifica si el estado ha cambiado desde la última vez
-      if (data.state !== state.state) {
-        state = data;
-        console.log("State changed:", state.state);
+      if (data.state !== state) {
+        preState = state;
+        state = data.state;
+        first = data.lehenengoAldia;
+        console.log("Prestate:   " + preState);
+
+        console.log("State changed:", state);
 
         // Verifica si el estado ahora es 'capturing'
-        if (state.state === 'capturing') {
+        if (state === "capturing") {
           console.log("capturing");
 
-          console.log("loadBegin");
-          dataAll.push(
-            "Start" +
-              ":" +
-              document.title +
-              ";" +
-              window.location.hostname +
-              ";" +
-              Date.now() +
-              "\n"
-          );
-          dataAll.push("Kargatutako URLa:" + " " + window.location.href + " " + moment(Date.now()).format('YYYY-MM-DD HH:mm:ss') + "\n");
-          first = false;
+          if (localStorage.getItem("dataAll") !== null) {
+            dataAll = JSON.parse(localStorage.getItem("dataAll"));
+          }
+
+          if (localStorage.getItem("first") === null) {
+            localStorage.setItem("first", true);
+            dataAll.push(
+              "Start" +
+                ":" +
+                document.title +
+                ";" +
+                window.location.hostname +
+                ";" +
+                moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+                "\n"
+            );
+            dataAll.push(
+              "Kargatutako URLa:" +
+                " " +
+                window.location.href +
+                " " +
+                moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+                "\n"
+            );
+            localStorage.setItem("dataAll", JSON.stringify(dataAll));
+            localStorage.setItem("first", false);
+          }
+          
 
           document.addEventListener("click", handleClick);
           document.addEventListener("keyup", handleKeyUp);
@@ -49,6 +69,20 @@ setInterval(function () {
           // Si el estado ya no es 'capturing', elimina los oyentes de eventos
           document.removeEventListener("click", handleClick);
           document.removeEventListener("keyup", handleKeyUp);
+          if (preState === "capturing") {
+            dataAll.push(
+              "Finish" +
+                ":" +
+                " " +
+                moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+                "\n"
+            )
+            localStorage.setItem("dataAll", JSON.stringify(dataAll));
+            download();
+            localStorage.clear();
+            dataAll = new Array();
+            return;
+          }
         }
       }
     })
@@ -59,22 +93,35 @@ setInterval(function () {
 
 function handleClick(event) {
   console.log("Click");
-  dataAll.push("Egindako klika: " + event.target + moment(Date.now()).format('YYYY-MM-DD HH:mm:ss') + "\n");
+  dataAll.push(
+    "Egindako klika: " +
+      event.target +
+      " " +
+      moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+      "\n"
+  );
+  localStorage.setItem("dataAll", JSON.stringify(dataAll));
 }
 
 function handleKeyUp(event) {
   console.log("KeyUp");
-  dataAll.push("Sakatutako Tekla: " + event.key +  moment(Date.now()).format('YYYY-MM-DD HH:mm:ss') + "\n");
-  if (event.key == "F8") {
-    download();
-  }
+  dataAll.push(
+    "Sakatutako Tekla: " +
+      " " +
+      event.key +
+      " " +
+      moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+      "\n"
+  );
+  localStorage.setItem("dataAll", JSON.stringify(dataAll));
 }
 
 function download() {
+  const datos = JSON.parse(localStorage.getItem("dataAll"));
   const link = document.createElement("a");
-  const file = new Blob([dataAll.toString()], { type: "text/plain" });
+  const file = new Blob([datos.toString()], { type: "text/plain" });
   link.href = URL.createObjectURL(file);
-  link.download = "adibidea.txt";
+  link.download = window.location.host + ".txt";
   link.click();
   URL.revokeObjectURL(link.href);
 }
