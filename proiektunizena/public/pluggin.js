@@ -61,7 +61,6 @@ setInterval(function () {
             localStorage.setItem("dataAll", JSON.stringify(dataAll));
             localStorage.setItem("first", false);
           }
-          
 
           document.addEventListener("click", handleClick);
           document.addEventListener("keyup", handleKeyUp);
@@ -76,7 +75,7 @@ setInterval(function () {
                 " " +
                 moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
                 "\n"
-            )
+            );
             localStorage.setItem("dataAll", JSON.stringify(dataAll));
             download();
             localStorage.clear();
@@ -92,14 +91,71 @@ setInterval(function () {
 }, 500);
 
 function handleClick(event) {
-  console.log("Click");
-  dataAll.push(
-    "Egindako klika: " +
-      event.target +
-      " " +
-      moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-      "\n"
-  );
+  var x = event.clientX;
+  var y = event.clientY;
+
+  var clickedElement = document.elementFromPoint(x, y);
+  if (clickedElement === null) {
+    gertuna_dagoena = encontrarElementoMasCercano(x, y);
+    console.log("Click" + "X:" + x + "Y:" + y);
+    dataAll.push(
+      "Inongo elementua ez duen klika egin du" +
+        " " +
+        "Elementu gertuena:" +
+        " " +
+        gertuna_dagoena +
+        " " +
+        moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+        "\n"
+    );
+  } else {
+    if (esElementoInteractivo(clickedElement)) {
+      console.log("Click" + clickedElement + "X:" + x + "Y:" + y);
+      dataAll.push(
+        "Egindako klika: " + " " +
+          clickedElement + " " +
+          "X:" + " " +
+          x + " " +
+          "Y:" + " " +
+          y + " " +
+          "Elementuaren izena:" +
+          " " +
+          clickedElement.textContent + " " +
+          moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+          "\n"
+      );
+    } else {
+      gertuna_dagoena = encontrarElementoMasCercano(x, y);
+      console.log(
+        "Click" +
+          "X:" +
+          x +
+          "Y:" +
+          y +
+          "Elementu gertuena:" +
+          " " +
+          gertuna_dagoena
+      );
+      dataAll.push(
+        "Egindako klika: " + " " + 
+          clickedElement + " " +
+          "X:" + " " +
+          x + " " + 
+          "Y:" + " " +
+          y + " " +
+          "Elementuaren izena:" +
+          " " +
+          clickedElement.textContent +
+          " " +
+          "Elementu gertuena:" +
+          " " +
+          gertuna_dagoena +
+          " " +
+          moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+          "\n"
+      );
+    }
+  }
   localStorage.setItem("dataAll", JSON.stringify(dataAll));
 }
 
@@ -124,4 +180,34 @@ function download() {
   link.download = window.location.host + ".txt";
   link.click();
   URL.revokeObjectURL(link.href);
+}
+
+function encontrarElementoMasCercano(x, y) {
+  // Iterar sobre todas las coordenadas de la ventana del navegador
+  for (var currentX = 0; currentX < window.innerWidth; currentX++) {
+    for (var currentY = 0; currentY < window.innerHeight; currentY++) {
+      // Obtener el elemento en las coordenadas actuales
+      var currentElement = document.elementFromPoint(currentX, currentY);
+
+      // Verificar si el elemento es interactivo
+      if (esElementoInteractivo(currentElement)) {
+        // Devolver el elemento encontrado
+        return currentElement;
+      }
+    }
+  }
+
+  // Si no se encuentra ningún elemento interactivo en la página, devolver null
+  return null;
+}
+
+function esElementoInteractivo(element) {
+  // Implementa la lógica para determinar si el elemento es interactivo.
+  // Puedes personalizar esta función según tus necesidades.
+  // Aquí se considera interactivo si el elemento no es nulo y tiene un manejador de clic.
+  return (
+    element !== null &&
+    (typeof element.onclick === "function" ||
+      typeof element.click === "function")
+  );
 }
