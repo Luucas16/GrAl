@@ -26,6 +26,9 @@ setInterval(function () {
         preState = state;
         state = data.state;
         first = data.lehenengoAldia;
+        klikak = data.klikak;
+        teklak = data.teklak;
+
         console.log("Prestate:   " + preState);
 
         console.log("State changed:", state);
@@ -61,9 +64,16 @@ setInterval(function () {
             localStorage.setItem("dataAll", JSON.stringify(dataAll));
             localStorage.setItem("first", false);
           }
-
-          document.addEventListener("click", handleClick);
-          document.addEventListener("keyup", handleKeyUp);
+          if (klikak === true) {
+            document.addEventListener("click", handleClick);
+          } else {
+            document.removeEventListener("click", handleClick);
+          }
+          if (teklak === true) {
+            document.addEventListener("keyup", handleKeyUp);
+          } else {
+            document.removeEventListener("keyup", handleKeyUp);
+          }
         } else {
           // Si el estado ya no es 'capturing', elimina los oyentes de eventos
           document.removeEventListener("click", handleClick);
@@ -112,15 +122,22 @@ function handleClick(event) {
     if (esElementoInteractivo(clickedElement)) {
       console.log("Click" + clickedElement + "X:" + x + "Y:" + y);
       dataAll.push(
-        "Egindako klika: " + " " +
-          clickedElement + " " +
-          "X:" + " " +
-          x + " " +
-          "Y:" + " " +
-          y + " " +
+        "Egindako klika: " +
+          " " +
+          clickedElement +
+          " " +
+          "X:" +
+          " " +
+          x +
+          " " +
+          "Y:" +
+          " " +
+          y +
+          " " +
           "Elementuaren izena:" +
           " " +
-          clickedElement.textContent + " " +
+          clickedElement.textContent +
+          " " + //Desplegablea bada dena imprimatzen du, hau begiratu behar da
           moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
           "\n"
       );
@@ -137,15 +154,21 @@ function handleClick(event) {
           gertuna_dagoena
       );
       dataAll.push(
-        "Egindako klika: " + " " + 
-          clickedElement + " " +
-          "X:" + " " +
-          x + " " + 
-          "Y:" + " " +
-          y + " " +
+        "Egindako klika: " +
+          " " +
+          clickedElement +
+          " " +
+          "X:" +
+          " " +
+          x +
+          " " +
+          "Y:" +
+          " " +
+          y +
+          " " +
           "Elementuaren izena:" +
           " " +
-          clickedElement.textContent +
+          clickedElement.textContent + //Desplegablea bada dena imprimatzen du, hau begiratu behar da
           " " +
           "Elementu gertuena:" +
           " " +
@@ -183,22 +206,31 @@ function download() {
 }
 
 function encontrarElementoMasCercano(x, y) {
-  // Iterar sobre todas las coordenadas de la ventana del navegador
-  for (var currentX = 0; currentX < window.innerWidth; currentX++) {
-    for (var currentY = 0; currentY < window.innerHeight; currentY++) {
-      // Obtener el elemento en las coordenadas actuales
-      var currentElement = document.elementFromPoint(currentX, currentY);
+  var distanciaMinima = Number.MAX_VALUE;
+  var elementoMasCercano = null;
 
-      // Verificar si el elemento es interactivo
-      if (esElementoInteractivo(currentElement)) {
-        // Devolver el elemento encontrado
-        return currentElement;
-      }
+  // Iterar sobre todos los elementos de la página
+  var elementos = document.querySelectorAll("*");
+  elementos.forEach(function (currentElement) {
+    // Obtener las coordenadas del centro del elemento
+    var rect = currentElement.getBoundingClientRect();
+    var centroX = rect.left + rect.width / 2;
+    var centroY = rect.top + rect.height / 2;
+
+    // Calcular la distancia entre el punto (x, y) y el centro del elemento
+    var distancia = Math.sqrt(
+      Math.pow(centroX - x, 2) + Math.pow(centroY - y, 2)
+    );
+
+    // Verificar si esta distancia es menor que la distancia mínima actual
+    if (distancia < distanciaMinima && esElementoInteractivo(currentElement)) {
+      distanciaMinima = distancia;
+      elementoMasCercano = currentElement;
     }
-  }
+  });
 
-  // Si no se encuentra ningún elemento interactivo en la página, devolver null
-  return null;
+  // Devolver el elemento encontrado (o null si no se encontró ninguno)
+  return elementoMasCercano;
 }
 
 function esElementoInteractivo(element) {
