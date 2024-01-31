@@ -104,23 +104,26 @@ function handleClick(event) {
   var x = event.clientX;
   var y = event.clientY;
 
-  var clickedElement = document.elementFromPoint(x, y);
+  var clickedElement = event.target;
   if (clickedElement === null) {
-    gertuna_dagoena = encontrarElementoMasCercano(x, y);
-    console.log("Click" + "X:" + x + "Y:" + y);
-    dataAll.push(
-      "Inongo elementua ez duen klika egin du" +
-        " " +
-        "Elementu gertuena:" +
-        " " +
-        gertuna_dagoena +
-        " " +
-        moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-        "\n"
-    );
-  } else {
+    clickedElement = encontrarElementoMasCercanoSiNecesario(event);
+
+    return;
+  }
+  if (clickedElement.textContent.length < 40) {
+    clickedElementText = clickedElement.textContent;
+  }else if(clickedElement.tagName !== ""){
+    clickedElementText = clickedElement.tagName;
+
+  }else if(clickedElement.name !== ""){
+    clickedElementText = clickedElement.name;
+  }else{
+    clickedElementText = clickedElement.id;
+  } 
+
     if (esElementoInteractivo(clickedElement)) {
       console.log("Click" + clickedElement + "X:" + x + "Y:" + y);
+     
       dataAll.push(
         "Egindako klika: " +
           " " +
@@ -136,13 +139,25 @@ function handleClick(event) {
           " " +
           "Elementuaren izena:" +
           " " +
-          clickedElement.textContent +
+          clickedElementText +
           " " + //Desplegablea bada dena imprimatzen du, hau begiratu behar da
           moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
           "\n"
       );
     } else {
-      gertuna_dagoena = encontrarElementoMasCercano(x, y);
+      gertuna_dagoena = encontrarElementoMasCercano(clickedElement);
+
+      if (gertuna_dagoena.textContent.length < 40) {
+      gertuna_dagoenaText = gertuna_dagoena.textContent;
+      }else if(gertuna_dagoena.tagName !== ""){
+        gertuna_dagoenaText = gertuna_dagoena.tagName;
+    
+      }else if(gertuna_dagoena.name !== ""){
+        gertuna_dagoenaText = gertuna_dagoena.name;
+      }else{
+        gertuna_dagoenaText = gertuna_dagoena.id;
+      } 
+
       console.log(
         "Click" +
           "X:" +
@@ -151,7 +166,7 @@ function handleClick(event) {
           y +
           "Elementu gertuena:" +
           " " +
-          gertuna_dagoena
+          gertuna_dagoenaText
       );
       dataAll.push(
         "Egindako klika: " +
@@ -168,17 +183,17 @@ function handleClick(event) {
           " " +
           "Elementuaren izena:" +
           " " +
-          clickedElement.textContent + //Desplegablea bada dena imprimatzen du, hau begiratu behar da
+          clickedElementText +
           " " +
           "Elementu gertuena:" +
           " " +
-          gertuna_dagoena +
+          gertuna_dagoenaText +
           " " +
           moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
           "\n"
       );
     }
-  }
+  
   localStorage.setItem("dataAll", JSON.stringify(dataAll));
 }
 
@@ -205,41 +220,81 @@ function download() {
   URL.revokeObjectURL(link.href);
 }
 
-function encontrarElementoMasCercano(x, y) {
-  var distanciaMinima = Number.MAX_VALUE;
-  var elementoMasCercano = null;
+function encontrarElementoMasCercano(elementoClicado) {
 
-  // Iterar sobre todos los elementos de la página
-  var elementos = document.querySelectorAll("*");
-  elementos.forEach(function (currentElement) {
-    // Obtener las coordenadas del centro del elemento
-    var rect = currentElement.getBoundingClientRect();
-    var centroX = rect.left + rect.width / 2;
-    var centroY = rect.top + rect.height / 2;
+  // Encontrar el elemento más cercano que sea un botón o contenga un enlace
+  var elementoConEnlaceCercano = elementoClicado.closest('button, [href], [data-clickable]');
+  if (elementoConEnlaceCercano === null) {
+    // Si no hay elemento más cercano, buscar el elemento más cercano que contenga un enlace
+    elementoConEnlaceCercano = elementoClicado.closest('[href], [data-clickable]');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('button');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('[data-clickable]');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('[href]');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('a');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('input');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('select');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('textarea');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('label');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('span');
+  }
+  if
+  (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest('div');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('ul');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('li');
+  }
+  if(elementoConEnlaceCercano === null){
+    elementoConEnlaceCercano = elementoClicado.closest('form');
+  }
+  
 
-    // Calcular la distancia entre el punto (x, y) y el centro del elemento
-    var distancia = Math.sqrt(
-      Math.pow(centroX - x, 2) + Math.pow(centroY - y, 2)
-    );
-
-    // Verificar si esta distancia es menor que la distancia mínima actual
-    if (distancia < distanciaMinima && esElementoInteractivo(currentElement)) {
-      distanciaMinima = distancia;
-      elementoMasCercano = currentElement;
-    }
-  });
 
   // Devolver el elemento encontrado (o null si no se encontró ninguno)
-  return elementoMasCercano;
+  return elementoConEnlaceCercano;
 }
 
 function esElementoInteractivo(element) {
-  // Implementa la lógica para determinar si el elemento es interactivo.
-  // Puedes personalizar esta función según tus necesidades.
-  // Aquí se considera interactivo si el elemento no es nulo y tiene un manejador de clic.
   return (
     element !== null &&
-    (typeof element.onclick === "function" ||
-      typeof element.click === "function")
+    (element instanceof HTMLButtonElement ||
+      (element instanceof HTMLAnchorElement && element.href) ||
+      (element instanceof HTMLInputElement && (element.type === 'button' || element.type === 'submit')))
   );
+}
+
+function encontrarElementoMasCercanoSiNecesario(event) {
+  var x = event.clientX;
+  var y = event.clientY;
+
+  // Intenta obtener el elemento directamente desde las coordenadas del clic
+  var clickedElement = document.elementFromPoint(x, y);
+
+  // Si no se encuentra ningún elemento directamente en las coordenadas, encuentra el elemento más cercano usando closest
+  if (!clickedElement) {
+    return encontrarElementoMasCercano(document.elementFromPoint(x - 1, y - 1));
+  }
+
+  return clickedElement;
 }
