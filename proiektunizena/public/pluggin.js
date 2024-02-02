@@ -90,6 +90,8 @@ setInterval(function () {
             download();
             localStorage.clear();
             dataAll = new Array();
+            //redirigir a otra url
+            window.location.replace("https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link");
             return;
           }
         }
