@@ -6,7 +6,8 @@ var cors = require('cors');
 
 //Gauzen kontrola jarraitzeko aldagaiak
 
-var datos = {state: "notcapturing", lehenengoAldia: true , klikak: false, teklak: false};
+var datos = {state: "notcapturing", lehenengoAldia: true , klikak: false, teklak: false, izena: ""};
+
 
 
 
@@ -30,6 +31,7 @@ app.post('/changeState', function (req, res) {
         datos.lehenengoAldia = false;
     }else if (req.body.state === "notcapturing"){
         datos.lehenengoAldia = true;
+        datos.izena = "";
     }
     datos.state = req.body.state;
     datos.klikak = req.body.klikak;
@@ -43,5 +45,10 @@ app.get('/getState', function (req, res) {
     res.header('Access-Control-Allow-Origin', '*');
     res.send(datos);
     });
+app.post('/izena', function (req, res) {
+    datos.izena = req.body.izena;
+    res.send('Got a POST request');
+    });
+
 
 

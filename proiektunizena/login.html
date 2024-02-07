@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Extensión</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+    h1 {
+      color: #4CAF50; /* Color verde */
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    input[type="submit"] {
+      background-color: #4CAF50; /* Color verde */
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+      transition: background-color 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #45a049; /* Cambia de color al pasar el ratón sobre el botón */
+    }
+  </style>
+  <script src="login.js"></script>
+</head>
+<body>
+  <h1>proiektuarenIzena</h1>
+  <form>
+    <input type="text" id="user" name="user" placeholder="Erabiltzailea">
+    <br>
+    <input type="button" value="Bidali" id="submit">
+  </form>
+</body>
+</html>

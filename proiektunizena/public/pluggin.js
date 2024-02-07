@@ -28,6 +28,7 @@ setInterval(function () {
         first = data.lehenengoAldia;
         klikak = data.klikak;
         teklak = data.teklak;
+        izena = data.izena;
 
         console.log("Prestate:   " + preState);
 
@@ -46,6 +47,9 @@ setInterval(function () {
             dataAll.push(
               "Start" +
                 ":" +
+                " " +
+                izena +
+                " " +
                 document.title +
                 ";" +
                 window.location.hostname +
