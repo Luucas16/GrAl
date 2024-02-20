@@ -1,5 +1,3 @@
-izena = "";
-
 setInterval(function () {
     fetch("http://localhost:3000/getState", {
       method: "GET",
@@ -16,16 +14,16 @@ setInterval(function () {
       .then((data) => {
         izena = data.izena;
         state = data.state;
-
+        if(izena !== ""){
+          window.location.href = "popup.html";
+      }
         
         console.log("State changed:", state.state);
       })
       .catch((error) => {
         console.error("Error during fetch:", error);
       });
-    if(izena !== ""){
-        window.location.href = "popup.html";
-    }
+   
   }, 50);
 
 

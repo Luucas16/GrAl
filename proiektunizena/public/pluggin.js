@@ -1,8 +1,7 @@
 var state = { state: "notcapturing" }; // Inicializa el estado
 
 var preState = { state: "notcapturing" };
-
-var dataAll = new Array();
+var dataAll = "";
 
 setInterval(function () {
   fetch("http://localhost:3000/getState", {
@@ -29,6 +28,7 @@ setInterval(function () {
         klikak = data.klikak;
         teklak = data.teklak;
         izena = data.izena;
+        //dataAll = data.dataAll;
 
         console.log("Prestate:   " + preState);
 
@@ -38,13 +38,14 @@ setInterval(function () {
         if (state === "capturing") {
           console.log("capturing");
 
-          if (localStorage.getItem("dataAll") !== null) {
-            dataAll = JSON.parse(localStorage.getItem("dataAll"));
-          }
+          // if (localStorage.getItem("dataAll") !== null) {
+          //   dataAll = JSON.parse(localStorage.getItem("dataAll"));
+          // }
 
-          if (localStorage.getItem("first") === null) {
-            localStorage.setItem("first", true);
-            dataAll.push(
+          // if (localStorage.getItem("first") === null) {
+          //   localStorage.setItem("first", true);
+          if (first) {
+            dataAll = dataAll.concat(
               "Start" +
                 ":" +
                 " " +
@@ -57,7 +58,8 @@ setInterval(function () {
                 moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
                 "\n"
             );
-            dataAll.push(
+
+            dataAll = dataAll.concat(
               "Kargatutako URLa:" +
                 " " +
                 window.location.href +
@@ -65,9 +67,26 @@ setInterval(function () {
                 moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
                 "\n"
             );
-            localStorage.setItem("dataAll", JSON.stringify(dataAll));
-            localStorage.setItem("first", false);
+            fetch("http://localhost:3000/data", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                data: dataAll,
+              }),
+            }).then((res) => {
+              if (!res.ok) {
+                throw new Error(`Network response was not ok: ${res.status}`);
+              }
+              dataAll = "";
+              return res.json();
+            });
           }
+          first = false;
+          //   localStorage.setItem("dataAll", JSON.stringify(dataAll));
+          //   localStorage.setItem("first", false);
+          // }
           if (klikak === true) {
             document.addEventListener("click", handleClick);
           } else {
@@ -83,19 +102,21 @@ setInterval(function () {
           document.removeEventListener("click", handleClick);
           document.removeEventListener("keyup", handleKeyUp);
           if (preState === "capturing") {
-            dataAll.push(
-              "Finish" +
-                ":" +
-                " " +
-                moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-                "\n"
-            );
-            localStorage.setItem("dataAll", JSON.stringify(dataAll));
+            // dataAll = dataAll.concat(
+            //   "Finish" +
+            //     ":" +
+            //     " " +
+            //     moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+            //     "\n"
+            // );
+            //localStorage.setItem("dataAll", JSON.stringify(dataAll));
             download();
-            localStorage.clear();
-            dataAll = new Array();
+            //localStorage.clear();
+            //dataAll = new Array();
             //redirigir a otra url
-            window.location.replace("https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link");
+            window.location.replace(
+              "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link"
+            );
             return;
           }
         }
@@ -106,6 +127,27 @@ setInterval(function () {
     });
 }, 500);
 
+// setInterval(
+//   function () {
+//     fetch("http://localhost:3000/data", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         data: dataAll,
+//       }),
+//     }).then((res) => {
+//       if (!res.ok) {
+//         throw new Error(`Network response was not ok: ${res.status}`);
+//       }
+//       dataAll = "";
+//       return res.json();
+//     });
+//   },
+
+//   250
+// );
 function handleClick(event) {
   var x = event.clientX;
   var y = event.clientY;
@@ -118,94 +160,106 @@ function handleClick(event) {
   }
   if (clickedElement.textContent.length < 40) {
     clickedElementText = clickedElement.textContent;
-  }else if(clickedElement.tagName !== ""){
+  } else if (clickedElement.tagName !== "") {
     clickedElementText = clickedElement.tagName;
-
-  }else if(clickedElement.name !== ""){
+  } else if (clickedElement.name !== "") {
     clickedElementText = clickedElement.name;
-  }else{
+  } else {
     clickedElementText = clickedElement.id;
-  } 
+  }
 
-    if (esElementoInteractivo(clickedElement)) {
-      console.log("Click" + clickedElement + "X:" + x + "Y:" + y);
-     
-      dataAll.push(
-        "Egindako klika: " +
-          " " +
-          clickedElement +
-          " " +
-          "X:" +
-          " " +
-          x +
-          " " +
-          "Y:" +
-          " " +
-          y +
-          " " +
-          "Elementuaren izena:" +
-          " " +
-          clickedElementText +
-          " " + //Desplegablea bada dena imprimatzen du, hau begiratu behar da
-          moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-          "\n"
-      );
-    } else {
-      gertuna_dagoena = encontrarElementoMasCercano(clickedElement);
+  if (esElementoInteractivo(clickedElement)) {
+    console.log("Click" + clickedElement + "X:" + x + "Y:" + y);
 
-      if (gertuna_dagoena.textContent.length < 40) {
+    dataAll = dataAll.concat(
+      "Egindako klika: " +
+        " " +
+        clickedElement +
+        " " +
+        "X:" +
+        " " +
+        x +
+        " " +
+        "Y:" +
+        " " +
+        y +
+        " " +
+        "Elementuaren izena:" +
+        " " +
+        clickedElementText +
+        " " + //Desplegablea bada dena imprimatzen du, hau begiratu behar da
+        moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+        "\n"
+    );
+  } else {
+    gertuna_dagoena = encontrarElementoMasCercano(clickedElement);
+
+    if (gertuna_dagoena.textContent.length < 40) {
       gertuna_dagoenaText = gertuna_dagoena.textContent;
-      }else if(gertuna_dagoena.tagName !== ""){
-        gertuna_dagoenaText = gertuna_dagoena.tagName;
-    
-      }else if(gertuna_dagoena.name !== ""){
-        gertuna_dagoenaText = gertuna_dagoena.name;
-      }else{
-        gertuna_dagoenaText = gertuna_dagoena.id;
-      } 
-
-      console.log(
-        "Click" +
-          "X:" +
-          x +
-          "Y:" +
-          y +
-          "Elementu gertuena:" +
-          " " +
-          gertuna_dagoenaText
-      );
-      dataAll.push(
-        "Egindako klika: " +
-          " " +
-          clickedElement +
-          " " +
-          "X:" +
-          " " +
-          x +
-          " " +
-          "Y:" +
-          " " +
-          y +
-          " " +
-          "Elementuaren izena:" +
-          " " +
-          clickedElementText +
-          " " +
-          "Elementu gertuena:" +
-          " " +
-          gertuna_dagoenaText +
-          " " +
-          moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-          "\n"
-      );
+    } else if (gertuna_dagoena.tagName !== "") {
+      gertuna_dagoenaText = gertuna_dagoena.tagName;
+    } else if (gertuna_dagoena.name !== "") {
+      gertuna_dagoenaText = gertuna_dagoena.name;
+    } else {
+      gertuna_dagoenaText = gertuna_dagoena.id;
     }
-  
-  localStorage.setItem("dataAll", JSON.stringify(dataAll));
+
+    console.log(
+      "Click" +
+        "X:" +
+        x +
+        "Y:" +
+        y +
+        "Elementu gertuena:" +
+        " " +
+        gertuna_dagoenaText
+    );
+    dataAll = dataAll.concat(
+      "Egindako klika: " +
+        " " +
+        clickedElement +
+        " " +
+        "X:" +
+        " " +
+        x +
+        " " +
+        "Y:" +
+        " " +
+        y +
+        " " +
+        "Elementuaren izena:" +
+        " " +
+        clickedElementText +
+        " " +
+        "Elementu gertuena:" +
+        " " +
+        gertuna_dagoenaText +
+        " " +
+        moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+        "\n"
+    );
+  }
+  fetch("http://localhost:3000/data", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      data: dataAll,
+    }),
+  }).then((res) => {
+    if (!res.ok) {
+      throw new Error(`Network response was not ok: ${res.status}`);
+    }
+    dataAll = "";
+    return res.json();
+  });
+  //localStorage.setItem("dataAll", JSON.stringify(dataAll));
 }
 
 function handleKeyUp(event) {
   console.log("KeyUp");
-  dataAll.push(
+  dataAll = dataAll.concat(
     "Sakatutako Tekla: " +
       " " +
       event.key +
@@ -213,13 +267,28 @@ function handleKeyUp(event) {
       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
       "\n"
   );
-  localStorage.setItem("dataAll", JSON.stringify(dataAll));
+  fetch("http://localhost:3000/data", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      data: dataAll,
+    }),
+  }).then((res) => {
+    if (!res.ok) {
+      throw new Error(`Network response was not ok: ${res.status}`);
+    }
+    dataAll = "";
+    return res.json();
+  });
+  //localStorage.setItem("dataAll", JSON.stringify(dataAll));
 }
 
 function download() {
-  const datos = JSON.parse(localStorage.getItem("dataAll"));
+  // const datos = JSON.parse(localStorage.getItem("dataAll"));
   const link = document.createElement("a");
-  const file = new Blob([datos.toString()], { type: "text/plain" });
+  const file = new Blob([dataAll.toString()], { type: "text/plain" });
   link.href = URL.createObjectURL(file);
   link.download = window.location.host + ".txt";
   link.click();
@@ -227,55 +296,55 @@ function download() {
 }
 
 function encontrarElementoMasCercano(elementoClicado) {
-
   // Encontrar el elemento más cercano que sea un botón o contenga un enlace
-  var elementoConEnlaceCercano = elementoClicado.closest('button, [href], [data-clickable]');
+  var elementoConEnlaceCercano = elementoClicado.closest(
+    "button, [href], [data-clickable]"
+  );
   if (elementoConEnlaceCercano === null) {
     // Si no hay elemento más cercano, buscar el elemento más cercano que contenga un enlace
-    elementoConEnlaceCercano = elementoClicado.closest('[href], [data-clickable]');
+    elementoConEnlaceCercano = elementoClicado.closest(
+      "[href], [data-clickable]"
+    );
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('button');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("button");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('[data-clickable]');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("[data-clickable]");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('[href]');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("[href]");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('a');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("a");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('input');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("input");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('select');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("select");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('textarea');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("textarea");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('label');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("label");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('span');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("span");
   }
-  if
-  (elementoConEnlaceCercano === null) {
-    elementoConEnlaceCercano = elementoClicado.closest('div');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("div");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('ul');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("ul");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('li');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("li");
   }
-  if(elementoConEnlaceCercano === null){
-    elementoConEnlaceCercano = elementoClicado.closest('form');
+  if (elementoConEnlaceCercano === null) {
+    elementoConEnlaceCercano = elementoClicado.closest("form");
   }
-  
-
 
   // Devolver el elemento encontrado (o null si no se encontró ninguno)
   return elementoConEnlaceCercano;
@@ -286,7 +355,8 @@ function esElementoInteractivo(element) {
     element !== null &&
     (element instanceof HTMLButtonElement ||
       (element instanceof HTMLAnchorElement && element.href) ||
-      (element instanceof HTMLInputElement && (element.type === 'button' || element.type === 'submit')))
+      (element instanceof HTMLInputElement &&
+        (element.type === "button" || element.type === "submit")))
   );
 }
 
