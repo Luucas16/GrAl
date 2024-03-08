@@ -1,7 +1,26 @@
-var state = { state: "notcapturing" }; // Inicializa el estado
+var state = { state: "capturing" }; // Inicializa el estado
 
 var preState = { state: "notcapturing" };
 var dataAll = "";
+
+fetch("http://localhost:3000/getState", {
+  method: "GET",
+  headers: {
+    "Content-Type": "application/json",
+  },
+})
+  .then((res) => {
+    if (!res.ok) {
+      throw new Error(`Network response was not ok: ${res.status}`);
+    }
+    return res.json();
+  })
+  .then((data) => {
+    console.log(data);
+    console.log(state.state === "capturing");
+    klikak = data.klikak;
+    teklak = data.teklak;
+  });
 
 setInterval(function () {
   fetch("http://localhost:3000/getState", {
@@ -18,107 +37,50 @@ setInterval(function () {
     })
     .then((data) => {
       console.log(data);
-      console.log(state === "capturing");
+      console.log(state.state === "capturing");
 
       // Verifica si el estado ha cambiado desde la última vez
-      if (data.state !== state) {
+      if (data.state !== state.state) {
         preState = state;
-        state = data.state;
+        egoera = data.state;
         first = data.lehenengoAldia;
         klikak = data.klikak;
         teklak = data.teklak;
         izena = data.izena;
         //dataAll = data.dataAll;
+        console.log("First:   " + first);
+        if (first && window.location.href !== "http://localhost:3000/login") {
+          window.location.href = "http://localhost:3000/login";
+        }
 
         console.log("Prestate:   " + preState);
 
-        console.log("State changed:", state);
+        console.log("State changed:", data.state);
+      }
 
-        // Verifica si el estado ahora es 'capturing'
-        if (state === "capturing") {
-          console.log("capturing");
+      // Verifica si el estado ahora es 'capturing'
+      if (data.state === "capturing") {
+        console.log("capturing");
 
-          // if (localStorage.getItem("dataAll") !== null) {
-          //   dataAll = JSON.parse(localStorage.getItem("dataAll"));
-          // }
-
-          // if (localStorage.getItem("first") === null) {
-          //   localStorage.setItem("first", true);
-          // if (first) {
-          //   dataAll = dataAll.concat(
-          //     "Start" +
-          //       ":" +
-          //       " " +
-          //       izena +
-          //       " " +
-          //       document.title +
-          //       ";" +
-          //       window.location.hostname +
-          //       ";" +
-          //       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-          //       "\n"
-          //   );
-
-          //   dataAll = dataAll.concat(
-          //     "Kargatutako URLa:" +
-          //       " " +
-          //       window.location.href +
-          //       " " +
-          //       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-          //       "\n"
-          //   );
-            // fetch("http://localhost:3000/data", {
-            //   method: "POST",
-            //   headers: {
-            //     "Content-Type": "application/json",
-            //   },
-            //   body: JSON.stringify({
-            //     data: dataAll,
-            //   }),
-            // }).then((res) => {
-            //   if (!res.ok) {
-            //     throw new Error(`Network response was not ok: ${res.status}`);
-            //   }
-            //   dataAll = "";
-            //   return res.json();
-            // });
-          
-          first = false;
-          //   localStorage.setItem("dataAll", JSON.stringify(dataAll));
-          //   localStorage.setItem("first", false);
-          // }
-          if (klikak === true) {
-            document.addEventListener("click", handleClick);
-          } else {
-            document.removeEventListener("click", handleClick);
-          }
-          if (teklak === true) {
-            document.addEventListener("keyup", handleKeyUp);
-          } else {
-            document.removeEventListener("keyup", handleKeyUp);
-          }
+        if (klikak === true) {
+          document.addEventListener("click", handleClick);
         } else {
-          // Si el estado ya no es 'capturing', elimina los oyentes de eventos
           document.removeEventListener("click", handleClick);
+        }
+        if (teklak === true) {
+          document.addEventListener("keyup", handleKeyUp);
+        } else {
           document.removeEventListener("keyup", handleKeyUp);
-          if (preState === "capturing") {
-            // dataAll = dataAll.concat(
-            //   "Finish" +
-            //     ":" +
-            //     " " +
-            //     moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-            //     "\n"
-            // );
-            //localStorage.setItem("dataAll", JSON.stringify(dataAll));
-            //download();
-            //localStorage.clear();
-            //dataAll = new Array();
-            //redirigir a otra url
-            window.location.replace(
-              "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link"
-            );
-            return;
-          }
+        }
+      } else {
+        // Si el estado ya no es 'capturing', elimina los oyentes de eventos
+        document.removeEventListener("click", handleClick);
+        document.removeEventListener("keyup", handleKeyUp);
+        if (preState === "capturing") {
+          window.location.replace(
+            "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link"
+          );
+          return;
         }
       }
     })
@@ -127,27 +89,6 @@ setInterval(function () {
     });
 }, 500);
 
-// setInterval(
-//   function () {
-//     fetch("http://localhost:3000/data", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         data: dataAll,
-//       }),
-//     }).then((res) => {
-//       if (!res.ok) {
-//         throw new Error(`Network response was not ok: ${res.status}`);
-//       }
-//       dataAll = "";
-//       return res.json();
-//     });
-//   },
-
-//   250
-// );
 function handleClick(event) {
   var x = event.clientX;
   var y = event.clientY;
@@ -254,7 +195,6 @@ function handleClick(event) {
     dataAll = "";
     return res.json();
   });
-  //localStorage.setItem("dataAll", JSON.stringify(dataAll));
 }
 
 function handleKeyUp(event) {
@@ -282,17 +222,6 @@ function handleKeyUp(event) {
     dataAll = "";
     return res.json();
   });
-  //localStorage.setItem("dataAll", JSON.stringify(dataAll));
-}
-
-function download() {
-  // const datos = JSON.parse(localStorage.getItem("dataAll"));
-  const link = document.createElement("a");
-  const file = new Blob([dataAll.toString()], { type: "text/plain" });
-  link.href = URL.createObjectURL(file);
-  link.download = window.location.host + ".txt";
-  link.click();
-  URL.revokeObjectURL(link.href);
 }
 
 function encontrarElementoMasCercano(elementoClicado) {

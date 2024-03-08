@@ -1,53 +1,126 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Extensión</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      text-align: center;
-      margin: 20px;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Extensión</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        text-align: center;
+        margin: 20px;
+      }
 
-    button {
-      background-color: #4CAF50; /* Color verde */
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin: 5px;
-    }
+      button {
+        background-color: #4caf50; /* Color verde */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
 
-    button:hover {
-      background-color: #45a049; /* Cambia de color al pasar el ratón sobre el botón */
-    }
-  </style>
-  <script src="popup.js"></script>
-</head>
-<body>
-  <h1>proiektuarenIzena</h1>
-  <p>Aukeratu bat:</p>
-  <h1>Oraingo egoera:</h1>
-    <p id="estado"> </p>
-  <button id="miBoton">Ekintzak gordetzen hasi</button>
-  <button id="miBoton2">Ekintzak gordetzez utzi</button>
+      button:hover {
+        background-color: #45a049; /* Cambia de color al pasar el ratón sobre el botón */
+      }
+    </style>
+    <!-- <script src="popup.js"></script> -->
+  </head>
+  <body>
+    <h1>proiektuarenIzena</h1>
+    <p>Aukeratu bat:</p>
+    <h1>Oraingo egoera:</h1>
+    <p id="estado"></p>
+    <button id="miBoton">Ekintzak gordetzen hasi</button>
+    <button id="miBoton2">Ekintzak gordetzez utzi</button>
+    <script>
+      var state = { state: "notcapturing" };
+      var klikak = false;
+      var teklak = false;
 
-  <!-- <br>
+      setInterval(function () {
+        fetch("http://localhost:3000/getState", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`Network response was not ok: ${res.status}`);
+            }
+            return res.json();
+          })
+          .then((data) => {
+            state = data.state;
 
-  <label for="opcion1">
-    <input type="checkbox" id="opcion1" name="Klikak Gorde"> Klikak Gorde
-  </label>
+            console.log("State changed:", state.state);
+          })
+          .catch((error) => {
+            console.error("Error during fetch:", error);
+          });
+        if (state === "notcapturing") {
+          document.getElementById("estado").innerHTML =
+            "Ez da informaziorik gordeko";
+        } else if (state === "capturing") {
+          document.getElementById("estado").innerHTML = "Informazioa gordetzen";
+        }
+      }, 500);
 
-  <br>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Obtener referencia al botón por su ID
+        var boton = document.getElementById("miBoton");
+        var boton2 = document.getElementById("miBoton2");
 
-  <label for="opcion2">
-    <input type="checkbox" id="opcion2" name="Teklak Gorde"> Teklak Gorde
-  </label>
+        // Agregar un evento clic al botón
+        boton.addEventListener("click", function () {
+          // Realizar el fetch al hacer clic en el botón
+          fetch("http://localhost:3000/changeState", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ state: "capturing" }), //, klikak, teklak }),
+          })
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error(`Error en la solicitud: ${res.status}`);
+              }
+              return res.json();
+            })
+            .then((data) => {
+              // Manejar la respuesta del servidor aquí
+              console.log("Respuesta del servidor:", data);
+            })
+            .catch((error) => {
+              console.error("Error durante el fetch:", error);
+            });
+        });
 
-  <br> -->
-</body>
+        boton2.addEventListener("click", function () {
+          fetch("http://localhost:3000/changeState", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ state: "notcapturing" }),
+          })
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error(`Error en la solicitud: ${res.status}`);
+              }
+              return res.json();
+            })
+            .then((data) => {
+              // Manejar la respuesta del servidor aquí
+              console.log("Respuesta del servidor:", data);
+            })
+            .catch((error) => {
+              console.error("Error durante el fetch:", error);
+            });
+        });
+      });
+    </script>
+  </body>
 </html>
-

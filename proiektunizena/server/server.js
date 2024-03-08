@@ -4,6 +4,11 @@ var app = express();
 var bodyParser = require("body-parser");
 var cors = require("cors");
 var moment = require("moment");
+const path = require("path");
+
+// Define la ruta base de tu proyecto
+const baseDir = path.join(__dirname, "..");
+
 //mongodb
 const mongoose = require("mongoose");
 const { serialize } = require("v8");
@@ -17,7 +22,7 @@ const erabiltzaileEskema = new mongoose.Schema({
 
 const db = mongoose.model("Proba", erabiltzaileEskema);
 
-let inicioTiempo; 
+let inicioTiempo;
 let intervalId;
 
 fs.readFile("conf.json", "utf8", (err, data) => {
@@ -72,26 +77,25 @@ fs.readFile("conf.json", "utf8", (err, data) => {
         console.log("{state: notcapturing}");
         datos.state = "notcapturing";
         DBanGorde(datos);
+        datos.lehenengoAldia = true;
       }, konfigurazio_parametroak.parametroak.dembora_max); //Milisegundoetan
     } else if (datos.state === "notcapturing") {
-      
+      datos.lehenengoAldia = true;
       clearTimeout(timeoutId);
       DBanGorde(datos);
     }
 
-    //datos.klikak = req.body.klikak;
-    //datos.teklak = req.body.teklak;
     res.send("Got a POST request");
   });
 
   app.get("/getState", function (req, res) {
-    // console.log("getState");
-
     res.header("Access-Control-Allow-Origin", "*");
     res.send(datos);
   });
+
   app.post("/izena", function (req, res) {
     datos.izena = req.body.izena;
+    datos.lehenengoAldia = false;
     res.send("Got a POST request");
   });
 
@@ -101,6 +105,14 @@ fs.readFile("conf.json", "utf8", (err, data) => {
     }
 
     res.send("Got a POST request");
+  });
+
+  app.get("/login", function (req, res) {
+    res.sendFile(path.join(baseDir + "/login.html"));
+  });
+
+  app.get("/popup", function (req, res) {
+    res.sendFile(path.join(baseDir + "/popup.html"));
   });
 });
 
@@ -133,5 +145,7 @@ function calcularTiempoPasado(fechaInicio) {
   const diasPasados = Math.floor(horasPasadas / 24);
 
   // Construir el mensaje de respuesta
-  return `Han pasado ${diasPasados} días, ${horasPasadas % 24} horas, ${minutosPasados % 60} minutos y ${segundosPasados % 60} segundos.`;
-};
+  return `Han pasado ${diasPasados} días, ${horasPasadas % 24} horas, ${
+    minutosPasados % 60
+  } minutos y ${segundosPasados % 60} segundos.`;
+}
