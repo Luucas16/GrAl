@@ -44,45 +44,45 @@ setInterval(function () {
 
           // if (localStorage.getItem("first") === null) {
           //   localStorage.setItem("first", true);
-          if (first) {
-            dataAll = dataAll.concat(
-              "Start" +
-                ":" +
-                " " +
-                izena +
-                " " +
-                document.title +
-                ";" +
-                window.location.hostname +
-                ";" +
-                moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-                "\n"
-            );
+          // if (first) {
+          //   dataAll = dataAll.concat(
+          //     "Start" +
+          //       ":" +
+          //       " " +
+          //       izena +
+          //       " " +
+          //       document.title +
+          //       ";" +
+          //       window.location.hostname +
+          //       ";" +
+          //       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+          //       "\n"
+          //   );
 
-            dataAll = dataAll.concat(
-              "Kargatutako URLa:" +
-                " " +
-                window.location.href +
-                " " +
-                moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-                "\n"
-            );
-            fetch("http://localhost:3000/data", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                data: dataAll,
-              }),
-            }).then((res) => {
-              if (!res.ok) {
-                throw new Error(`Network response was not ok: ${res.status}`);
-              }
-              dataAll = "";
-              return res.json();
-            });
-          }
+          //   dataAll = dataAll.concat(
+          //     "Kargatutako URLa:" +
+          //       " " +
+          //       window.location.href +
+          //       " " +
+          //       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+          //       "\n"
+          //   );
+            // fetch("http://localhost:3000/data", {
+            //   method: "POST",
+            //   headers: {
+            //     "Content-Type": "application/json",
+            //   },
+            //   body: JSON.stringify({
+            //     data: dataAll,
+            //   }),
+            // }).then((res) => {
+            //   if (!res.ok) {
+            //     throw new Error(`Network response was not ok: ${res.status}`);
+            //   }
+            //   dataAll = "";
+            //   return res.json();
+            // });
+          
           first = false;
           //   localStorage.setItem("dataAll", JSON.stringify(dataAll));
           //   localStorage.setItem("first", false);
@@ -110,7 +110,7 @@ setInterval(function () {
             //     "\n"
             // );
             //localStorage.setItem("dataAll", JSON.stringify(dataAll));
-            download();
+            //download();
             //localStorage.clear();
             //dataAll = new Array();
             //redirigir a otra url

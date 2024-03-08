@@ -37,15 +37,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Agregar un evento clic al botón
   boton.addEventListener("click", function () {
-    var checkb1 = document.getElementById("opcion1");
-    var checkb2 = document.getElementById("opcion2");
+    // var checkb1 = document.getElementById("opcion1");
+    // var checkb2 = document.getElementById("opcion2");
 
-    if (checkb1.checked) {
-      klikak = true;
-    }
-    if (checkb2.checked) {
-      teklak = true;
-    }
+    // if (checkb1.checked) {
+    //   klikak = true;
+    // }
+    // if (checkb2.checked) {
+    //   teklak = true;
+    // }
 
     // Realizar el fetch al hacer clic en el botón
     fetch("http://localhost:3000/changeState", {
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ state: "capturing", klikak, teklak }),
+      body: JSON.stringify({ state: "capturing"}),//, klikak, teklak }),
     })
       .then((res) => {
         if (!res.ok) {

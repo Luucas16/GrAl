@@ -1,0 +1,10 @@
+{
+  "parametroak": {
+    "dembora_max": 600000, 
+    "bukaera_puntua": ["a", "b", "c"],
+    "hasierako_weba": ["A", "B", "C"],
+    "klikak": true,
+    "teklak": true,
+    "nabegazioa_librea": true
+  }
+}
