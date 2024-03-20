@@ -1,6 +1,7 @@
-var state = { state: "capturing" }; // Inicializa el estado
-
-var preState = { state: "notcapturing" };
+var state = "capturing"; // Inicializa el estado
+var preState = "notcapturing";
+var nabigazio_librea;
+var hasierako_weba;
 var dataAll = "";
 
 fetch("http://localhost:3000/getState", {
@@ -20,6 +21,9 @@ fetch("http://localhost:3000/getState", {
     console.log(state.state === "capturing");
     klikak = data.klikak;
     teklak = data.teklak;
+    birbidali = data.birbidali;
+    klikop = data.klikop;
+    teklakop = data.teklakop;
   });
 
 setInterval(function () {
@@ -37,30 +41,61 @@ setInterval(function () {
     })
     .then((data) => {
       console.log(data);
-      console.log(state.state === "capturing");
-
+      console.log(state === "capturing");
+      console.log(data.state !== state);
       // Verifica si el estado ha cambiado desde la última vez
-      if (data.state !== state.state) {
+      if (data.state !== state) {
         preState = state;
-        egoera = data.state;
+        state = data.state;
         first = data.lehenengoAldia;
         klikak = data.klikak;
         teklak = data.teklak;
         izena = data.izena;
+        birbidali = data.birbidali;
         //dataAll = data.dataAll;
+        if (birbidali) {
+          birbidali = false;
+          fetch("http://localhost:3000/birbidali", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              data: birbidali,
+            }),
+          }).then((res) => {
+            if (!res.ok) {
+              throw new Error(`Network response was not ok: ${res.status}`);
+            }
+            window.location.replace(
+              "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link"
+            );
+            return res.json();
+          });
+
+          return;
+        }
         console.log("First:   " + first);
-        if (first && window.location.href !== "http://localhost:3000/login") {
+        if (
+          first &&
+          window.location.href !== "http://localhost:3000/login" &&
+          state === "notcapturing" &&
+          window.location.href.indexOf("https://docs.google.com/forms") !== 0
+        ) {
           window.location.href = "http://localhost:3000/login";
         }
-
-        console.log("Prestate:   " + preState);
-
-        console.log("State changed:", data.state);
+        if (data.bukaera_puntua) {
+          if (state === "capturing") {
+            if (!data.nabigazio_librea) {
+              window.location.href = data.hasierako_weba;
+            }
+          }
+        }
       }
 
       // Verifica si el estado ahora es 'capturing'
       if (data.state === "capturing") {
-        console.log("capturing");
+        console.log(data.nabigazio_librea);
 
         if (klikak === true) {
           document.addEventListener("click", handleClick);
@@ -76,12 +111,6 @@ setInterval(function () {
         // Si el estado ya no es 'capturing', elimina los oyentes de eventos
         document.removeEventListener("click", handleClick);
         document.removeEventListener("keyup", handleKeyUp);
-        if (preState === "capturing") {
-          window.location.replace(
-            "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link"
-          );
-          return;
-        }
       }
     })
     .catch((error) => {
@@ -180,6 +209,7 @@ function handleClick(event) {
         "\n"
     );
   }
+  klikop = klikop + 1;
   fetch("http://localhost:3000/data", {
     method: "POST",
     headers: {
@@ -187,6 +217,7 @@ function handleClick(event) {
     },
     body: JSON.stringify({
       data: dataAll,
+      klikop: klikop,
     }),
   }).then((res) => {
     if (!res.ok) {
@@ -207,6 +238,7 @@ function handleKeyUp(event) {
       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
       "\n"
   );
+  teklakop = teklakop + 1;
   fetch("http://localhost:3000/data", {
     method: "POST",
     headers: {
@@ -214,6 +246,7 @@ function handleKeyUp(event) {
     },
     body: JSON.stringify({
       data: dataAll,
+      teklakop: teklakop,
     }),
   }).then((res) => {
     if (!res.ok) {

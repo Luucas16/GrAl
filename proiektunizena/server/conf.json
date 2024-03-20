@@ -1,10 +1,10 @@
 {
   "parametroak": {
     "dembora_max": 600000, 
-    "bukaera_puntua": ["a", "b", "c"],
-    "hasierako_weba": ["A", "B", "C"],
     "klikak": true,
     "teklak": true,
-    "nabegazioa_librea": true
+    "nabegazio_librea": false,
+    "bukaera_puntua": "Hemen jarri bukaerako puntua",
+    "hasierako_weba": "https://www.donostia.eus/"
   }
 }
