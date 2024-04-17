@@ -4,7 +4,8 @@
     "klikak": true,
     "teklak": true,
     "nabegazio_librea": false,
-    "bukaera_puntua": "Hemen jarri bukaerako puntua",
-    "hasierako_weba": "https://www.donostia.eus/"
+    "bukaera_puntua": "https://www.donostia.eus/cas/login?service=https%3A%2F%2Fwww.donostia.eus%2FTramites%2Flogin%2Fcas",
+    "hasierako_weba": "https://www.donostia.eus/",
+    "mongodb": "mongodb://127.0.0.1:27017/GrAl"
   }
 }

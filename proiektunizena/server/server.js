@@ -12,14 +12,13 @@ const baseDir = path.join(__dirname, "..");
 //mongodb
 const mongoose = require("mongoose");
 const { serialize } = require("v8");
-const DB_URL = "mongodb://127.0.0.1:27017/GrAl";
-mongoose.connect(DB_URL);
 
 const erabiltzaileEskema = new mongoose.Schema({
   username: String,
   data: String,
   klikop: Number,
   teklakop: Number,
+  dembora_segunduetan: Number,
 });
 
 const db = mongoose.model("Proba", erabiltzaileEskema);
@@ -36,6 +35,9 @@ fs.readFile("conf.json", "utf8", (err, data) => {
   // Analizar el contenido JSON
   const konfigurazio_parametroak = JSON.parse(data);
 
+  const DB_URL = konfigurazio_parametroak.parametroak.mongodb;
+  mongoose.connect(DB_URL);
+
   var datos = {
     state: "notcapturing",
     lehenengoAldia: true,
@@ -49,6 +51,8 @@ fs.readFile("conf.json", "utf8", (err, data) => {
     birbidali: false,
     klikop: 0,
     teklakop: 0,
+    dembora_segunduetan: 0,
+    oraingo_helbidea: "",
   };
 
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -73,13 +77,26 @@ fs.readFile("conf.json", "utf8", (err, data) => {
         // Si el usuario ya existe, actualizar su data
         await db.updateOne(
           { username: datos.izena },
-          { $set: { data: datos.dataAll, klikop: datos.klikop, teklakop: datos.teklakop } }
+          {
+            $set: {
+              data: datos.dataAll,
+              klikop: datos.klikop,
+              teklakop: datos.teklakop,
+              dembora_segunduetan: datos.dembora_segunduetan,
+            },
+          }
         );
         console.log(`Datos actualizados para el usuario ${datos.izena}.`);
       } else {
         // Si el usuario no existe, crear uno nuevo
 
-        await db.create({ username: datos.izena, data: datos.dataAll ,klikop: datos.klikop, teklakop: datos.teklakop});
+        await db.create({
+          username: datos.izena,
+          data: datos.dataAll,
+          klikop: datos.klikop,
+          teklakop: datos.teklakop,
+          dembora_segunduetan: datos.dembora_segunduetan,
+        });
         console.log(`Nuevo usuario ${datos.izena} creado.`);
       }
     }
@@ -88,16 +105,11 @@ fs.readFile("conf.json", "utf8", (err, data) => {
     const ahora = new Date();
     const tiempoPasado = ahora - fechaInicio;
 
-    // Convertir el tiempo pasado a segundos, minutos, etc.
-    const segundosPasados = Math.floor(tiempoPasado / 1000);
-    const minutosPasados = Math.floor(segundosPasados / 60);
-    const horasPasadas = Math.floor(minutosPasados / 60);
-    const diasPasados = Math.floor(horasPasadas / 24);
+    // Convertir el tiempo pasado a segundos totales
+    const segundosTotalesPasados = Math.floor(tiempoPasado / 1000);
 
     // Construir el mensaje de respuesta
-    return `Han pasado ${diasPasados} días, ${horasPasadas % 24} horas, ${
-      minutosPasados % 60
-    } minutos y ${segundosPasados % 60} segundos.`;
+    return segundosTotalesPasados;
   }
   function bukatu() {
     const tiempoPasado = calcularTiempoPasado(inicioTiempo); // Calcula el tiempo pasado
@@ -110,12 +122,13 @@ fs.readFile("conf.json", "utf8", (err, data) => {
       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
       "\n";
 
-    datos.dataAll += "Guztira pasatutako dembora: " + " " + tiempoPasado + "\n";
+    datos.dembora_segunduetan = tiempoPasado;
     DBanGorde(datos).then(() => {
       datos.izena = "";
       datos.dataAll = "";
       datos.klikop = 0;
       datos.teklakop = 0;
+      datos.dembora_segunduetan = 0;
     });
   }
 
@@ -165,13 +178,14 @@ fs.readFile("conf.json", "utf8", (err, data) => {
 
   app.post("/data", function (req, res) {
     if (req.body.data !== "") {
-      if(req.body.klikop){
+      if (req.body.klikop) {
         datos.klikop = req.body.klikop;
       }
-      if(req.body.teklakop){
+      if (req.body.teklakop) {
         datos.teklakop = req.body.teklakop;
       }
       datos.dataAll = datos.dataAll.concat(req.body.data);
+
       DBanGorde(datos);
     }
 

@@ -3,8 +3,9 @@ var preState = "notcapturing";
 var nabigazio_librea;
 var hasierako_weba;
 var dataAll = "";
+var fetch_link = "http://localhost:3000";
 
-fetch("http://localhost:3000/getState", {
+fetch(fetch_link + "/getState", {
   method: "GET",
   headers: {
     "Content-Type": "application/json",
@@ -27,7 +28,7 @@ fetch("http://localhost:3000/getState", {
   });
 
 setInterval(function () {
-  fetch("http://localhost:3000/getState", {
+  fetch(fetch_link + "/getState", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -41,8 +42,7 @@ setInterval(function () {
     })
     .then((data) => {
       console.log(data);
-      console.log(state === "capturing");
-      console.log(data.state !== state);
+
       // Verifica si el estado ha cambiado desde la última vez
       if (data.state !== state) {
         preState = state;
@@ -55,7 +55,7 @@ setInterval(function () {
         //dataAll = data.dataAll;
         if (birbidali) {
           birbidali = false;
-          fetch("http://localhost:3000/birbidali", {
+          fetch(fetch_link + "/birbidali", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -78,24 +78,44 @@ setInterval(function () {
         console.log("First:   " + first);
         if (
           first &&
-          window.location.href !== "http://localhost:3000/login" &&
+          window.location.href !== fetch_link + "/login" &&
           state === "notcapturing" &&
           window.location.href.indexOf("https://docs.google.com/forms") !== 0
         ) {
-          window.location.href = "http://localhost:3000/login";
+          window.location.href = fetch_link + "/login";
         }
-        if (data.bukaera_puntua) {
-          if (state === "capturing") {
-            if (!data.nabigazio_librea) {
-              window.location.href = data.hasierako_weba;
-            }
-          }
+        if (state === "capturing" && !data.nabigazio_librea) {
+          window.location.href = data.hasierako_weba;
         }
       }
 
       // Verifica si el estado ahora es 'capturing'
       if (data.state === "capturing") {
-        console.log(data.nabigazio_librea);
+        console.log(window.location.href);
+
+        console.log(
+          state === "capturing" &&
+            !data.nabigazio_librea &&
+            window.location.href === data.bukaera_puntua
+        );
+        if (
+          state === "capturing" &&
+          !data.nabigazio_librea &&
+          window.location.href === data.bukaera_puntua
+        ) {
+          fetch(fetch_link + "/changeState", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ state: "notcapturing" }),
+          }).then((res) => {
+            if (!res.ok) {
+              throw new Error(`Network response was not ok: ${res.status}`);
+            }
+            return res.json();
+          });
+        }
 
         if (klikak === true) {
           document.addEventListener("click", handleClick);
@@ -210,7 +230,7 @@ function handleClick(event) {
     );
   }
   klikop = klikop + 1;
-  fetch("http://localhost:3000/data", {
+  fetch(fetch_link + "/data", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -230,6 +250,9 @@ function handleClick(event) {
 
 function handleKeyUp(event) {
   console.log("KeyUp");
+  if (event.key === "ª") {
+    window.location.href = fetch_link + "/login";
+  }
   dataAll = dataAll.concat(
     "Sakatutako Tekla: " +
       " " +
@@ -239,7 +262,7 @@ function handleKeyUp(event) {
       "\n"
   );
   teklakop = teklakop + 1;
-  fetch("http://localhost:3000/data", {
+  fetch(fetch_link + "/data", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
