@@ -48,6 +48,7 @@ fs.readFile("conf.json", "utf8", (err, data) => {
     hasierako_weba: konfigurazio_parametroak.parametroak.hasierako_weba,
     bukaera_puntua: konfigurazio_parametroak.parametroak.bukaera_puntua,
     nabigazio_librea: konfigurazio_parametroak.parametroak.nabegazio_librea,
+    bukaerako_botoia_class : konfigurazio_parametroak.parametroak.bukaerako_botoia_class,
     birbidali: false,
     klikop: 0,
     teklakop: 0,

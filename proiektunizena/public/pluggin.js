@@ -1,7 +1,5 @@
 var state = "capturing"; // Inicializa el estado
 var preState = "notcapturing";
-var nabigazio_librea;
-var hasierako_weba;
 var dataAll = "";
 var fetch_link = "http://localhost:3000";
 
@@ -25,6 +23,8 @@ fetch(fetch_link + "/getState", {
     birbidali = data.birbidali;
     klikop = data.klikop;
     teklakop = data.teklakop;
+    nabigazio_librea = data.nabigazio_librea;
+    bukaerako_botoia = data.bukaerako_botoia_class;
   });
 
 setInterval(function () {
@@ -52,6 +52,7 @@ setInterval(function () {
         teklak = data.teklak;
         izena = data.izena;
         birbidali = data.birbidali;
+
         //dataAll = data.dataAll;
         if (birbidali) {
           birbidali = false;
@@ -91,13 +92,6 @@ setInterval(function () {
 
       // Verifica si el estado ahora es 'capturing'
       if (data.state === "capturing") {
-        console.log(window.location.href);
-
-        console.log(
-          state === "capturing" &&
-            !data.nabigazio_librea &&
-            window.location.href === data.bukaera_puntua
-        );
         if (
           state === "capturing" &&
           !data.nabigazio_librea &&
@@ -148,6 +142,33 @@ function handleClick(event) {
 
     return;
   }
+  if (clickedElement.getAttribute("href") != null) {
+    console.log(clickedElement.getAttribute("href"));
+    console.log(
+      clickedElement.getAttribute("href") === bukaerako_botoia &&
+        !nabigazio_librea
+    );
+    if (
+      clickedElement.getAttribute("href") === bukaerako_botoia &&
+      !nabigazio_librea
+    ) {
+      event.preventDefault();
+      fetch(fetch_link + "/changeState", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ state: "notcapturing" }),
+      }).then((res) => {
+        if (!res.ok) {
+          throw new Error(`Network response was not ok: ${res.status}`);
+        }
+        return res.json();
+      });
+      return;
+    }
+  }
+
   if (clickedElement.textContent.length < 40) {
     clickedElementText = clickedElement.textContent;
   } else if (clickedElement.tagName !== "") {
@@ -252,6 +273,9 @@ function handleKeyUp(event) {
   console.log("KeyUp");
   if (event.key === "ª") {
     window.location.href = fetch_link + "/login";
+  }
+  if (event.key === "Enter") {
+    handleClick(event);
   }
   dataAll = dataAll.concat(
     "Sakatutako Tekla: " +
