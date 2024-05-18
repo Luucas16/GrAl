@@ -1,83 +1,89 @@
-const fs = require("fs");
-var express = require("express");
+// Zerbitzaria (Honek plugina eta Mongoren arteko komunikazioa egiten du)
+
+const fs = require("fs"); //config.json irakurtzeko
+var express = require("express"); //Aplkazioaren modulua (honek zerbitzaria sortzen du eta entzuten jartzen da. Eskaerak hartu eta erantzuten ditu)
 var app = express();
-var bodyParser = require("body-parser");
-var cors = require("cors");
-var moment = require("moment");
-const path = require("path");
+var bodyParser = require("body-parser"); //Eskaerak prozesatzeko (JSON, URL-encoded, edo plain text)
+var cors = require("cors"); // CORS politikak aplikatzeko (Cross-Origin Resource Sharing)
+var moment = require("moment"); //Data eta orduak formatu egokian erakusteko
+const path = require("path"); // login.html eta popup.html fitxategiak kargatzekoq
 
-// Define la ruta base de tu proyecto
-const baseDir = path.join(__dirname, "..");
+//////////////////////////////////////////////////////////////////////// Aldagiak ////////////////////////////////////////////////////////////////////
 
-//mongodb
-const mongoose = require("mongoose");
-const { serialize } = require("v8");
+// login.html eta popup.html kargatzeko direktorio basea
+const baseDir = path.join(__dirname, ".."); // __dirname: direktorioa non dagoen (aurreko karpetan daude login.html eta popup.html)
 
-const erabiltzaileEskema = new mongoose.Schema({
-  username: String,
-  data: String,
-  klikop: Number,
-  teklakop: Number,
-  dembora_segunduetan: Number,
-});
+let inicioTiempo; // Hasierako denbora gordeko duen aldagia
 
-const db = mongoose.model("Proba", erabiltzaileEskema);
-
-let inicioTiempo;
-let intervalId;
-
+// Hasierako datuak irakurri, hau da, konfigurazioa
 fs.readFile("conf.json", "utf8", (err, data) => {
   if (err) {
     console.error(err);
     return;
   }
 
-  // Analizar el contenido JSON
+  // JSON fitxategiaren edukia irakurri
   const konfigurazio_parametroak = JSON.parse(data);
 
-  const DB_URL = konfigurazio_parametroak.parametroak.mongodb;
-  mongoose.connect(DB_URL);
+  //mongodb
+  const mongoose = require("mongoose"); //Mongora konektatzeko
+  // MongoDB esquema, hau da, datu-basean gordeko den informazioa nola gordeko den zehazten duen kodea
+  const erabiltzaileEskema = new mongoose.Schema({
+    erabiltzailea: String,
+    data: String,
+    klikop: Number,
+    teklakop: Number,
+    dembora_segunduetan: Number,
+  });
+  const db = mongoose.model("Proba", erabiltzaileEskema); //Modeloa sortu (Proba izeneko datu-basea)
+  const DB_URL = konfigurazio_parametroak.parametroak.mongodb; //MongoDB URL-a
+  mongoose.connect(DB_URL); //MongoDB-ra konektatu
 
+  //Aldagai printzipala (datu guztiak gordetzeko)
   var datos = {
-    state: "notcapturing",
-    lehenengoAldia: true,
-    klikak: konfigurazio_parametroak.parametroak.klikak,
-    teklak: konfigurazio_parametroak.parametroak.teklak,
-    izena: "",
-    dataAll: "",
-    hasierako_weba: konfigurazio_parametroak.parametroak.hasierako_weba,
-    bukaera_puntua: konfigurazio_parametroak.parametroak.bukaera_puntua,
-    nabigazio_librea: konfigurazio_parametroak.parametroak.nabegazio_librea,
-    bukaerako_botoia_class : konfigurazio_parametroak.parametroak.bukaerako_botoia_class,
-    birbidali: false,
-    klikop: 0,
-    teklakop: 0,
-    dembora_segunduetan: 0,
-    oraingo_helbidea: "",
+    state: "notcapturing", //notcapturing edo capturing
+    lehenengoAldia: true, // True edo False (Lehenengo aldian sartu den edo ez zehazten du) (Hau plugina lehenengo aldian sartu den ala ez zehazten du)
+    klikak: konfigurazio_parametroak.parametroak.klikak, //True edo False (Egindako Klikak gorde behar diren edo ez zehazten du)
+    teklak: konfigurazio_parametroak.parametroak.teklak, //True edo False (Sakatutako Teklak gorde behar diren edo ez zehazten du)
+    izena: "", //Erabiltzailearen izena
+    dataAll: "", // Datuak, hau da, non egin duen klikak eta zer teklak sakatu dituen gordetzeko
+    hasierako_weba: konfigurazio_parametroak.parametroak.hasierako_weba, //Nabigazio ez libre bada zein den hasierkao weba
+    bukaera_puntua: konfigurazio_parametroak.parametroak.bukaera_puntua, // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
+    nabigazio_librea: konfigurazio_parametroak.parametroak.nabegazio_librea, // True edo False (Nabigazio libre bada edo ez zehazten du)
+    bukaerako_botoia_class:
+      konfigurazio_parametroak.parametroak.bukaerako_botoia_class, // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
+    birbidali: false, // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
+    klikop: 0, // Klik kopurua
+    teklakop: 0, // Tekla kopurua
+    dembora_segunduetan: 0, // Segundu kopurua
   };
+  //////////////////////////////////////////////////////////////////////// Aldagiak ////////////////////////////////////////////////////////////////////
 
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(bodyParser.json());
-  app.use(cors());
+  app.use(bodyParser.urlencoded({ extended: true })); // URL-encoded eskaerak prozesatzeko
+  app.use(bodyParser.json()); // JSON eskaerak prozesatzeko
+  app.use(cors()); // CORS politikak aplikatzeko
 
+  // CORS politikak aplikatzeko
   app.use(
     cors({
       origin: "*",
     })
   );
 
+  // Zerbitzaria 3000 portuan entzuten jarri
   app.listen(3000, function () {
     console.log("Example app listening on port 3000!");
   });
 
+  // MongoDB datu-basean datuak gorde (Sortuta ez bada, sortu)
   async function DBanGorde(datos) {
-    // Buscar un documento con el username dado
-    const existingUser = await db.findOne({ username: datos.izena });
+    // Bilatu erabiltzailea
+    const existingUser = await db.findOne({ erabiltzailea: datos.izena });
     if (datos.izena !== "") {
       if (existingUser) {
-        // Si el usuario ya existe, actualizar su data
+        // Erabiltzailea existitzen bada, datuak eguneratu
         await db.updateOne(
-          { username: datos.izena },
+          { erabiltzailea: datos.izena },
           {
             $set: {
               data: datos.dataAll,
@@ -87,21 +93,22 @@ fs.readFile("conf.json", "utf8", (err, data) => {
             },
           }
         );
-        console.log(`Datos actualizados para el usuario ${datos.izena}.`);
+        console.log(`Datuak eguneratuta ${datos.izena} erabiltzailearentzat.`);
       } else {
-        // Si el usuario no existe, crear uno nuevo
+        // Ez bada existitzen, sortu erabiltzailea
 
         await db.create({
-          username: datos.izena,
+          erabiltzailea: datos.izena,
           data: datos.dataAll,
           klikop: datos.klikop,
           teklakop: datos.teklakop,
           dembora_segunduetan: datos.dembora_segunduetan,
         });
-        console.log(`Nuevo usuario ${datos.izena} creado.`);
+        console.log(`Erabiltzailea : ${datos.izena} sortuta.`);
       }
     }
   }
+  // Noiz hasi den jakinda, denbora segundutan kalkulatzeko funtzioa
   function calcularTiempoPasado(fechaInicio) {
     const ahora = new Date();
     const tiempoPasado = ahora - fechaInicio;
@@ -112,8 +119,9 @@ fs.readFile("conf.json", "utf8", (err, data) => {
     // Construir el mensaje de respuesta
     return segundosTotalesPasados;
   }
+  //Testari bukaera ematen dion funtzioa
   function bukatu() {
-    const tiempoPasado = calcularTiempoPasado(inicioTiempo); // Calcula el tiempo pasado
+    //Bukaera eman
     datos.dataAll +=
       "End" +
       ":" +
@@ -123,8 +131,9 @@ fs.readFile("conf.json", "utf8", (err, data) => {
       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
       "\n";
 
-    datos.dembora_segunduetan = tiempoPasado;
+    datos.dembora_segunduetan = calcularTiempoPasado(inicioTiempo);
     DBanGorde(datos).then(() => {
+      //Datuak gorde ondoren, datuak reseteatu
       datos.izena = "";
       datos.dataAll = "";
       datos.klikop = 0;
@@ -133,9 +142,11 @@ fs.readFile("conf.json", "utf8", (err, data) => {
     });
   }
 
+  // POST eskaera bat jaso denean eta /changeState helbidera eginda, hau exekutatuko da (Honek state aldagaia aldatzen du)
   app.post("/changeState", function (req, res) {
     console.log(req.body);
     datos.state = req.body.state;
+    //Capturing-ea aldatu nahi bada orduan hasierako denbora gorde eta dataAll hasieratu. Gainera dembora maximoa pasatzen bada, bukaerako prozedura egin.
     if (datos.state === "capturing") {
       inicioTiempo = new Date();
       datos.dataAll =
@@ -155,6 +166,7 @@ fs.readFile("conf.json", "utf8", (err, data) => {
         datos.lehenengoAldia = true;
         datos.birbidali = true;
       }, konfigurazio_parametroak.parametroak.dembora_max); //Milisegundoetan
+      //NotCapturing-ea aldatu nahi bada orduan aldagaiak reseteatu, lehen haitako "kontagailua" (setTimeout) ezabatu, azkeneko datuak gorde eta bukaera egin.
     } else if (datos.state === "notcapturing") {
       datos.lehenengoAldia = true;
       datos.birbidali = true;
@@ -166,17 +178,19 @@ fs.readFile("conf.json", "utf8", (err, data) => {
     res.send("Got a POST request");
   });
 
+
+  // GET eskaera bat jaso denean eta /getState helbidera eginda, hau exekutatuko da (Honek datos aldagaia bueltatzen du, hau da, zer statean dagoen, zein den izena...)
   app.get("/getState", function (req, res) {
     res.header("Access-Control-Allow-Origin", "*");
     res.send(datos);
   });
-
+// POST eskaera bat jaso denean eta /izena helbidera eginda, hau exekutatuko da (Honek izena aldagaia aldatzen du)
   app.post("/izena", function (req, res) {
     datos.izena = req.body.izena;
     datos.lehenengoAldia = false;
     res.send("Got a POST request");
   });
-
+// POST eskaera bat jaso denean eta /data helbidera eginda, hau exekutatuko da (Honek data aldagaia eguneratzen du et adatu basean eguneratu)
   app.post("/data", function (req, res) {
     if (req.body.data !== "") {
       if (req.body.klikop) {
@@ -192,15 +206,15 @@ fs.readFile("conf.json", "utf8", (err, data) => {
 
     res.send("Got a POST request");
   });
-
+// POST eskaera bat jaso denean eta /login helbidera eginda, hau exekutatuko da (Honek login.html fitxategia kargatzen du)
   app.get("/login", function (req, res) {
     res.sendFile(path.join(baseDir + "/login.html"));
   });
-
+// POST eskaera bat jaso denean eta /popup helbidera eginda, hau exekutatuko da (Honek popup.html fitxategia kargatzen du)
   app.get("/popup", function (req, res) {
     res.sendFile(path.join(baseDir + "/popup.html"));
   });
-
+// POST eskaera bat jaso denean eta /birbidali helbidera eginda, hau exekutatuko da (Honek birbidali aldagaia aldatzen du)
   app.post("/birbidali", function (req, res) {
     datos.birbidali = req.body.birbidali;
     res.send("Got a POST request");

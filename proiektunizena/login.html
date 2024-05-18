@@ -46,6 +46,7 @@
       <input type="button" value="Bidali" id="submit" />
     </form>
     <script>
+      // Ikusi ea erabiltzailea sartu duen
       setInterval(function () {
         fetch("http://localhost:3000/getState", {
           method: "GET",
@@ -62,6 +63,7 @@
           .then((data) => {
             izena = data.izena;
             state = data.state;
+            // Erabiltzailea sartu badu, popup-era bidali
             if (izena !== "") {
               window.location.href = "http://localhost:3000/popup";
             }
@@ -70,7 +72,7 @@
             console.error("Error during fetch:", error);
           });
       }, 50);
-
+      // Bidalketa egin
       document.addEventListener("DOMContentLoaded", function () {
         document
           .getElementById("submit")
@@ -93,12 +95,6 @@
                 window.location.href = "http://localhost:3000/popup";
               });
           });
-      });
-
-      document.addEventListener("keyup", function (event) {
-        if (event.key === "Enter") {
-          document.getElementById("submit").click();
-        }
       });
     </script>
   </body>

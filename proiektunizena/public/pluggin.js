@@ -1,32 +1,12 @@
-var state = "capturing"; // Inicializa el estado
-var preState = "notcapturing";
+// Hemen erabiltzailearen ordenagailuan exekutatzen den kodea dago
+
+/////////////////////////  Aldagien hasieraketa eta ddefinizioa  /////////////////////////
+var state = "capturing";
 var dataAll = "";
 var fetch_link = "http://localhost:3000";
+/////////////////////////  Aldagien hasieraketa eta ddefinizioa  /////////////////////////
 
-fetch(fetch_link + "/getState", {
-  method: "GET",
-  headers: {
-    "Content-Type": "application/json",
-  },
-})
-  .then((res) => {
-    if (!res.ok) {
-      throw new Error(`Network response was not ok: ${res.status}`);
-    }
-    return res.json();
-  })
-  .then((data) => {
-    console.log(data);
-    console.log(state.state === "capturing");
-    klikak = data.klikak;
-    teklak = data.teklak;
-    birbidali = data.birbidali;
-    klikop = data.klikop;
-    teklakop = data.teklakop;
-    nabigazio_librea = data.nabigazio_librea;
-    bukaerako_botoia = data.bukaerako_botoia_class;
-  });
-
+//Honek eskaera bat egiten du segundu erdiro, ikusteko egoera zein det eta horren arabera datuak gordetzen hasi, gelditu... Etab egiteko
 setInterval(function () {
   fetch(fetch_link + "/getState", {
     method: "GET",
@@ -42,18 +22,21 @@ setInterval(function () {
     })
     .then((data) => {
       console.log(data);
+     //hasteko zerbitzariaren aldagaiak lortzen ditugu
+      klikak = data.klikak;
+      teklak = data.teklak;
+      klikop = data.klikop;
+      teklakop = data.teklakop;
+      nabigazio_librea = data.nabigazio_librea;
+      bukaerako_botoia = data.bukaerako_botoia_class;
 
-      // Verifica si el estado ha cambiado desde la última vez
+      // Egoera aldatu bada, orduan aldagaiak berriro ere hasieratu
       if (data.state !== state) {
-        preState = state;
         state = data.state;
         first = data.lehenengoAldia;
-        klikak = data.klikak;
-        teklak = data.teklak;
         izena = data.izena;
         birbidali = data.birbidali;
-
-        //dataAll = data.dataAll;
+        //Birbidali true bada, orduan esan nahi du testa bukatu dela eta formularioa bete behar dela. Hau egiteko Google docs-en formularioa ireki
         if (birbidali) {
           birbidali = false;
           fetch(fetch_link + "/birbidali", {
@@ -69,7 +52,7 @@ setInterval(function () {
               throw new Error(`Network response was not ok: ${res.status}`);
             }
             window.location.replace(
-              "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link"
+              "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link" //Formularioaren linka
             );
             return res.json();
           });
@@ -77,6 +60,7 @@ setInterval(function () {
           return;
         }
         console.log("First:   " + first);
+        //Honek erabiltzailea pluginaren horrira ematen du, lehenengo aldia bada noski
         if (
           first &&
           window.location.href !== fetch_link + "/login" &&
@@ -85,15 +69,16 @@ setInterval(function () {
         ) {
           window.location.href = fetch_link + "/login";
         }
+        //Behin egoera capturin dagoela, eta nabigazioa librea ez bada, hasierako webgunea kargatu
         if (state === "capturing" && !data.nabigazio_librea) {
           window.location.href = data.hasierako_weba;
         }
       }
 
-      // Verifica si el estado ahora es 'capturing'
-      if (data.state === "capturing") {
+      // Capturing egoeran dagoenean, klikak eta teklak baimendu
+      if (state === "capturing") {
+        // Nabigazio librea ez bada eta bukaerako webera iritsi bada, orduan notCapturing egoerara aldatu
         if (
-          state === "capturing" &&
           !data.nabigazio_librea &&
           window.location.href === data.bukaera_puntua
         ) {
@@ -122,7 +107,7 @@ setInterval(function () {
           document.removeEventListener("keyup", handleKeyUp);
         }
       } else {
-        // Si el estado ya no es 'capturing', elimina los oyentes de eventos
+        // Capturing egoeran ez dagoenean, ezabatu klikak eta teklaken jasotzea
         document.removeEventListener("click", handleClick);
         document.removeEventListener("keyup", handleKeyUp);
       }
@@ -132,6 +117,7 @@ setInterval(function () {
     });
 }, 500);
 
+//Honek klikak jasotzen ditu, eta datuak gordetzen ditu, gainera klika ez badu nehi zuen botoian eman, gertuen dagoen elementua bilatzen du. Klik kopurua ere gordetzen du
 function handleClick(event) {
   var x = event.clientX;
   var y = event.clientY;
@@ -143,11 +129,7 @@ function handleClick(event) {
     return;
   }
   if (clickedElement.getAttribute("href") != null) {
-    console.log(clickedElement.getAttribute("href"));
-    console.log(
-      clickedElement.getAttribute("href") === bukaerako_botoia &&
-        !nabigazio_librea
-    );
+    //Ikusi ea klik egiten den bukaerako botoian, eta nabigazio librea ez bada, orduan notCapturing egoerara aldatu
     if (
       clickedElement.getAttribute("href") === bukaerako_botoia &&
       !nabigazio_librea
@@ -268,7 +250,7 @@ function handleClick(event) {
     return res.json();
   });
 }
-
+//Honek sakatutako teklak gordetzen ditu, baita tekla kopurua ere
 function handleKeyUp(event) {
   console.log("KeyUp");
   if (event.key === "ª") {
@@ -303,7 +285,7 @@ function handleKeyUp(event) {
     return res.json();
   });
 }
-
+//Honek elementu gertuenaren bila egiten du, hau da, elementu bat sakatzen bada, baina ez bada botoi bat, hau egiten du
 function encontrarElementoMasCercano(elementoClicado) {
   // Encontrar el elemento más cercano que sea un botón o contenga un enlace
   var elementoConEnlaceCercano = elementoClicado.closest(
@@ -358,7 +340,7 @@ function encontrarElementoMasCercano(elementoClicado) {
   // Devolver el elemento encontrado (o null si no se encontró ninguno)
   return elementoConEnlaceCercano;
 }
-
+//Klikatutako elementua iteraktiboa den edo ez ikusten du
 function esElementoInteractivo(element) {
   return (
     element !== null &&
@@ -368,7 +350,7 @@ function esElementoInteractivo(element) {
         (element.type === "button" || element.type === "submit")))
   );
 }
-
+//Gertuen dagoen elementua bilatzen du
 function encontrarElementoMasCercanoSiNecesario(event) {
   var x = event.clientX;
   var y = event.clientY;

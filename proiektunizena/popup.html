@@ -35,10 +35,7 @@
     <button id="miBoton">Ekintzak gordetzen hasi</button>
     <button id="miBoton2">Ekintzak gordetzez utzi</button>
     <script>
-      var state = { state: "notcapturing" };
-      var klikak = false;
-      var teklak = false;
-
+      //Momentu egoera eskuratu eta horren arabera botoiak aldatu
       setInterval(function () {
         fetch("http://localhost:3000/getState", {
           method: "GET",
@@ -68,12 +65,13 @@
         }
       }, 500);
 
+      // Botoien funtzioak
       document.addEventListener("DOMContentLoaded", function () {
-        // Obtener referencia al botón por su ID
+        // Lortu botoiak
         var boton = document.getElementById("miBoton");
         var boton2 = document.getElementById("miBoton2");
 
-        // Agregar un evento clic al botón
+        // Lehenengo botoia sakatuz gero ekintzak gordetzen hasiko dira
         boton.addEventListener("click", function () {
           // Realizar el fetch al hacer clic en el botón
           fetch("http://localhost:3000/changeState", {
@@ -81,7 +79,7 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ state: "capturing" }), //, klikak, teklak }),
+            body: JSON.stringify({ state: "capturing" }),
           })
             .then((res) => {
               if (!res.ok) {
@@ -90,14 +88,13 @@
               return res.json();
             })
             .then((data) => {
-              // Manejar la respuesta del servidor aquí
               console.log("Respuesta del servidor:", data);
             })
             .catch((error) => {
               console.error("Error durante el fetch:", error);
             });
         });
-
+        // Bigarren botoia sakatuz gero ekintzak gordetzez utziko dira
         boton2.addEventListener("click", function () {
           fetch("http://localhost:3000/changeState", {
             method: "POST",
@@ -113,7 +110,6 @@
               return res.json();
             })
             .then((data) => {
-              // Manejar la respuesta del servidor aquí
               console.log("Respuesta del servidor:", data);
             })
             .catch((error) => {
