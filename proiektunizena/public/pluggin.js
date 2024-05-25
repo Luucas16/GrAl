@@ -1,9 +1,12 @@
 // Hemen erabiltzailearen ordenagailuan exekutatzen den kodea dago
 
 /////////////////////////  Aldagien hasieraketa eta ddefinizioa  /////////////////////////
-var state = "capturing";
 var dataAll = "";
 var fetch_link = "http://localhost:3000";
+var bukaerako_botoia_class = "";
+var nabigazio_librea = false;
+var klikop = 0;
+var teklakop = 0;
 /////////////////////////  Aldagien hasieraketa eta ddefinizioa  /////////////////////////
 
 //Honek eskaera bat egiten du segundu erdiro, ikusteko egoera zein det eta horren arabera datuak gordetzen hasi, gelditu... Etab egiteko
@@ -22,86 +25,103 @@ setInterval(function () {
     })
     .then((data) => {
       console.log(data);
-     //hasteko zerbitzariaren aldagaiak lortzen ditugu
-      klikak = data.klikak;
-      teklak = data.teklak;
+      bukaerako_botoia_class = data.bukaerako_botoia_class;
+      nabigazio_librea = data.nabigazio_librea;
       klikop = data.klikop;
       teklakop = data.teklakop;
-      nabigazio_librea = data.nabigazio_librea;
-      bukaerako_botoia = data.bukaerako_botoia_class;
 
-      // Egoera aldatu bada, orduan aldagaiak berriro ere hasieratu
-      if (data.state !== state) {
-        state = data.state;
-        first = data.lehenengoAldia;
-        izena = data.izena;
-        birbidali = data.birbidali;
-        //Birbidali true bada, orduan esan nahi du testa bukatu dela eta formularioa bete behar dela. Hau egiteko Google docs-en formularioa ireki
-        if (birbidali) {
-          birbidali = false;
-          fetch(fetch_link + "/birbidali", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              data: birbidali,
-            }),
-          }).then((res) => {
-            if (!res.ok) {
-              throw new Error(`Network response was not ok: ${res.status}`);
-            }
-            window.location.replace(
-              "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link" //Formularioaren linka
-            );
-            return res.json();
-          });
+      //hasteko zerbitzariaren aldagaiak lortzen ditugu
+      console.log("Birbidali: " + data.birbidali);
+      //Birbidali true bada, orduan esan nahi du testa bukatu dela eta formularioa bete behar dela. Hau egiteko Google docs-en formularioa ireki
+      if (data.birbidali) {
+        data.birbidali = false;
+        fetch(fetch_link + "/birbidali", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: data.birbidali,
+          }),
+        }).then((res) => {
+          if (!res.ok) {
+            throw new Error(`Network response was not ok: ${res.status}`);
+          }
+          window.location.replace(
+            "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link" //Formularioaren linka
+          );
+          return res.json();
+        });
 
-          return;
-        }
-        console.log("First:   " + first);
-        //Honek erabiltzailea pluginaren horrira ematen du, lehenengo aldia bada noski
-        if (
-          first &&
-          window.location.href !== fetch_link + "/login" &&
-          state === "notcapturing" &&
-          window.location.href.indexOf("https://docs.google.com/forms") !== 0
-        ) {
-          window.location.href = fetch_link + "/login";
-        }
-        //Behin egoera capturin dagoela, eta nabigazioa librea ez bada, hasierako webgunea kargatu
-        if (state === "capturing" && !data.nabigazio_librea) {
-          window.location.href = data.hasierako_weba;
-        }
+        return;
       }
+      console.log("birbidali: " + data.birbidali);
+      //Honek erabiltzailea pluginaren horrira ematen du, lehenengo aldia bada noski
+      if (
+        data.lehenengoAldia &&
+        window.location.href !== fetch_link + "/login" &&
+        window.location.href !== fetch_link + "/popup" &&
+        data.state === "notcapturing" &&
+        window.location.href.indexOf("https://docs.google.com/forms") !== 0
+      ) {
+        window.location.href = fetch_link + "/login";
+      }
+      //Behin egoera capturin dagoela, eta nabigazioa librea ez bada, hasierako webgunea kargatu
+      if (
+        data.lehenengoAldia &&
+        data.state === "capturing" &&
+        !data.nabigazio_librea &&
+        window.location.href.indexOf(data.hasierako_weba) !== 0 &&
+        window.location.href.indexOf("https://docs.google.com/forms") !== 0
+      ) {
+        window.location.href = data.hasierako_weba;
+        data.lehenengoAldia = false;
+        fetch(fetch_link + "/first", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: data.lehenengoAldia,
+          }),
+        });
+      }
+      // }
 
       // Capturing egoeran dagoenean, klikak eta teklak baimendu
-      if (state === "capturing") {
+      if (data.state === "capturing") {
         // Nabigazio librea ez bada eta bukaerako webera iritsi bada, orduan notCapturing egoerara aldatu
-        if (
-          !data.nabigazio_librea &&
-          window.location.href === data.bukaera_puntua
-        ) {
-          fetch(fetch_link + "/changeState", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ state: "notcapturing" }),
-          }).then((res) => {
-            if (!res.ok) {
-              throw new Error(`Network response was not ok: ${res.status}`);
-            }
-            return res.json();
-          });
-        }
+        // if (
+        //   !data.nabigazio_librea &&
+        //   window.location.href === data.bukaera_puntua
+        // ) {
+        //   fetch(fetch_link + "/changeState", {
+        //     method: "POST",
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({ state: "notcapturing" }),
+        //   }).then((res) => {
+        //     if (!res.ok) {
+        //       throw new Error(`Network response was not ok: ${res.status}`);
+        //     }
+        //     return res.json();
+        //   });s
+        //   return;
+        // }
 
-        if (klikak === true) {
+        if (
+          data.klikak === true &&
+          window.location.href.indexOf("https://docs.google.com/forms") !== 0
+        ) {
           document.addEventListener("click", handleClick);
         } else {
           document.removeEventListener("click", handleClick);
         }
-        if (teklak === true) {
+        if (
+          data.teklak === true &&
+          window.location.href.indexOf("https://docs.google.com/forms") !== 0
+        ) {
           document.addEventListener("keyup", handleKeyUp);
         } else {
           document.removeEventListener("keyup", handleKeyUp);
@@ -131,10 +151,11 @@ function handleClick(event) {
   if (clickedElement.getAttribute("href") != null) {
     //Ikusi ea klik egiten den bukaerako botoian, eta nabigazio librea ez bada, orduan notCapturing egoerara aldatu
     if (
-      clickedElement.getAttribute("href") === bukaerako_botoia &&
+      clickedElement.getAttribute("href") === bukaerako_botoia_class &&
       !nabigazio_librea
     ) {
       event.preventDefault();
+      console.log("He llegado aqui");
       fetch(fetch_link + "/changeState", {
         method: "POST",
         headers: {
@@ -253,12 +274,11 @@ function handleClick(event) {
 //Honek sakatutako teklak gordetzen ditu, baita tekla kopurua ere
 function handleKeyUp(event) {
   console.log("KeyUp");
-  if (event.key === "ª") {
-    window.location.href = fetch_link + "/login";
-  }
   if (event.key === "Enter") {
     handleClick(event);
+    return;
   }
+
   dataAll = dataAll.concat(
     "Sakatutako Tekla: " +
       " " +

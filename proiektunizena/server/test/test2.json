@@ -1,0 +1,12 @@
+{
+    "parametroak": {
+      "dembora_max": 600000, 
+      "klikak": true,
+      "teklak": true,
+      "nabegazio_librea": false,
+      "bukaera_puntua": "",
+      "hasierako_weba": "https://www.osakidetza.euskadi.eus/portada/",
+      "bukaerako_botoia_class" : "https://zitaberria.osakidetza.eus/o22PlamWar/iniciologin.do?idioma=cas",
+      "mongodb": "mongodb://127.0.0.1:27017/GrAl"
+    }
+  }

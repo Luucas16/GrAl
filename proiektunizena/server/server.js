@@ -13,50 +13,91 @@ const path = require("path"); // login.html eta popup.html fitxategiak kargatzek
 // login.html eta popup.html kargatzeko direktorio basea
 const baseDir = path.join(__dirname, ".."); // __dirname: direktorioa non dagoen (aurreko karpetan daude login.html eta popup.html)
 
-let inicioTiempo; // Hasierako denbora gordeko duen aldagia
+let inicioTiempo = Date.now(); // Hasierako denbora gordeko duen aldagia
 
 // Hasierako datuak irakurri, hau da, konfigurazioa
-fs.readFile("conf.json", "utf8", (err, data) => {
+fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
   if (err) {
     console.error(err);
     return;
   }
-
   // JSON fitxategiaren edukia irakurri
-  const konfigurazio_parametroak = JSON.parse(data);
+  const jsonObject1 = JSON.parse(data0);
+  // JSON fitxategiaren 'testak' aldagaia irakurri
+  const innerObject1 = jsonObject1.testak;
+  // Dauden test kopurua kontatu
+  const numberOfTests = Object.keys(innerObject1).length;
+  // console.log(numberOfTests);
 
   //mongodb
   const mongoose = require("mongoose"); //Mongora konektatzeko
   // MongoDB esquema, hau da, datu-basean gordeko den informazioa nola gordeko den zehazten duen kodea
   const erabiltzaileEskema = new mongoose.Schema({
     erabiltzailea: String,
+    testid: Number,
     data: String,
     klikop: Number,
     teklakop: Number,
     dembora_segunduetan: Number,
   });
   const db = mongoose.model("Proba", erabiltzaileEskema); //Modeloa sortu (Proba izeneko datu-basea)
-  const DB_URL = konfigurazio_parametroak.parametroak.mongodb; //MongoDB URL-a
-  mongoose.connect(DB_URL); //MongoDB-ra konektatu
+  const DB_URL = "mongodb://127.0.0.1:27017/GrAl"; //MongoDB URL-a
+  mongoose
+    .connect(DB_URL)
+    .then(() => console.log("Conexión exitosa a MongoDB"));
 
-  //Aldagai printzipala (datu guztiak gordetzeko)
-  var datos = {
+  
+  let datos = {
     state: "notcapturing", //notcapturing edo capturing
     lehenengoAldia: true, // True edo False (Lehenengo aldian sartu den edo ez zehazten du) (Hau plugina lehenengo aldian sartu den ala ez zehazten du)
-    klikak: konfigurazio_parametroak.parametroak.klikak, //True edo False (Egindako Klikak gorde behar diren edo ez zehazten du)
-    teklak: konfigurazio_parametroak.parametroak.teklak, //True edo False (Sakatutako Teklak gorde behar diren edo ez zehazten du)
+    klikak: false, //True edo False (Egindako Klikak gorde behar diren edo ez zehazten du)
+    teklak: false, //True edo False (Sakatutako Teklak gorde behar diren edo ez zehazten du)
     izena: "", //Erabiltzailearen izena
     dataAll: "", // Datuak, hau da, non egin duen klikak eta zer teklak sakatu dituen gordetzeko
-    hasierako_weba: konfigurazio_parametroak.parametroak.hasierako_weba, //Nabigazio ez libre bada zein den hasierkao weba
-    bukaera_puntua: konfigurazio_parametroak.parametroak.bukaera_puntua, // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
-    nabigazio_librea: konfigurazio_parametroak.parametroak.nabegazio_librea, // True edo False (Nabigazio libre bada edo ez zehazten du)
-    bukaerako_botoia_class:
-      konfigurazio_parametroak.parametroak.bukaerako_botoia_class, // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
+    hasierako_weba: "", //Nabigazio ez libre bada zein den hasierkao weba
+    bukaera_puntua: "", // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
+    nabigazio_librea: "", // True edo False (Nabigazio libre bada edo ez zehazten du)
+    bukaerako_botoia_class: "", // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
     birbidali: false, // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
     klikop: 0, // Klik kopurua
     teklakop: 0, // Tekla kopurua
     dembora_segunduetan: 0, // Segundu kopurua
-  };
+    testid: 1, // Testaren identifikadorea
+    dembora_max: 0, // Testaren dembora maximoa
+  }; // Datuak, hau da, non egin duen klikak eta zer teklak sakatu dituen gordetzeko...
+
+  let konfigurazio_parametroak = {};
+  let konfigurazio_parametroak1 = {};
+
+  fs.readFile(
+    path.join(__dirname, "test", `test${datos.testid}.json`),
+    "utf8",
+    (err, data) => {
+      konfigurazio_parametroak = JSON.parse(data);
+      //datos.state = "capturing"; //notcapturing edo capturing
+      datos.lehenengoAldia = true; // True edo False (Lehenengo aldian sartu den edo ez zehazten du) (Hau plugina lehenengo aldian sartu den ala ez zehazten du)
+      datos.klikak = konfigurazio_parametroak.parametroak.klikak; //True edo False (Egindako Klikak gorde behar diren edo ez zehazten du)
+      datos.teklak = konfigurazio_parametroak.parametroak.teklak; //True edo False (Sakatutako Teklak gorde behar diren edo ez zehazten du)
+      //datos.izena = datos.izena; //Erabiltzailearen izena
+      datos.dataAll = ""; // Datuak, hau da, non egin duen klikak eta zer teklak sakatu dituen gordetzeko
+      datos.hasierako_weba =
+        konfigurazio_parametroak.parametroak.hasierako_weba; //Nabigazio ez libre bada zein den hasierkao weba
+      datos.bukaera_puntua =
+        konfigurazio_parametroak.parametroak.bukaera_puntua; // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
+      datos.nabigazio_librea =
+        konfigurazio_parametroak.parametroak.nabegazio_librea; // True edo False (Nabigazio libre bada edo ez zehazten du)
+      datos.bukaerako_botoia_class =
+        konfigurazio_parametroak.parametroak.bukaerako_botoia_class; // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
+      datos.birbidali = false; // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
+      datos.klikop = 0; // Klik kopurua
+      datos.teklakop = 0; // Tekla kopurua
+      datos.dembora_segunduetan = 0; // Segundu kopurua
+      datos.testid = 1; // Testaren identifikadorea
+      datos.dembora_max = konfigurazio_parametroak.parametroak.dembora_max; // Testaren dembora maximoa
+    }
+  );
+
+  cont = 0;
   //////////////////////////////////////////////////////////////////////// Aldagiak ////////////////////////////////////////////////////////////////////
 
   app.use(bodyParser.urlencoded({ extended: true })); // URL-encoded eskaerak prozesatzeko
@@ -71,19 +112,83 @@ fs.readFile("conf.json", "utf8", (err, data) => {
   );
 
   // Zerbitzaria 3000 portuan entzuten jarri
-  app.listen(3000, function () {
+  server = app.listen(3000, function () {
     console.log("Example app listening on port 3000!");
   });
+  async function hurrengoTesta() {
+    cont = cont + 1;
+    console.log(cont);
+    if (datos.testid + 1 <= numberOfTests) {
+      datos.testid = datos.testid + 1;
+      console.log("Numero de id por el que vamos :" + datos.testid);
+      //Hurrengo testa eman
+      console.log(path.join(__dirname, "test", `test${datos.testid}.json`));
+      await fs.readFile(
+        path.join(__dirname, "test", `test${datos.testid}.json`),
+        "utf8",
+        (err, data1) => {
+          konfigurazio_parametroak1 = JSON.parse(data1);
+
+          //Aldagai printzipala (datu guztiak gordetzeko)
+
+          //datos.state = "capturing"; //notcapturing edo capturing
+          datos.lehenengoAldia = true; // True edo False (Lehenengo aldian sartu den edo ez zehazten du) (Hau plugina lehenengo aldian sartu den ala ez zehazten du)
+          datos.klikak = konfigurazio_parametroak1.parametroak.klikak; //True edo False (Egindako Klikak gorde behar diren edo ez zehazten du)
+          datos.teklak = konfigurazio_parametroak1.parametroak.teklak; //True edo False (Sakatutako Teklak gorde behar diren edo ez zehazten du)
+          //datos.izena = datos.izena; //Erabiltzailearen izena
+          datos.dataAll = ""; // Datuak, hau da, non egin duen klikak eta zer teklak sakatu dituen gordetzeko
+
+          inicioTiempo = new Date();
+          datos.dataAll =
+            "Start" +
+            ":" +
+            " " +
+            datos.izena +
+            " " +
+            datos.testid +
+            " " +
+            moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+            "\n";
+
+          datos.hasierako_weba =
+            konfigurazio_parametroak1.parametroak.hasierako_weba; //Nabigazio ez libre bada zein den hasierkao weba
+          datos.bukaera_puntua =
+            konfigurazio_parametroak1.parametroak.bukaera_puntua; // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
+          datos.nabigazio_librea =
+            konfigurazio_parametroak1.parametroak.nabegazio_librea; // True edo False (Nabigazio libre bada edo ez zehazten du)
+          datos.bukaerako_botoia_class =
+            konfigurazio_parametroak1.parametroak.bukaerako_botoia_class; // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
+          datos.birbidali = true; // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
+          datos.klikop = 0; // Klik kopurua
+          datos.teklakop = 0; // Tekla kopurua
+          datos.dembora_segunduetan = 0; // Segundu kopurua
+          datos.dembora_max = konfigurazio_parametroak1.parametroak.dembora_max; // Testaren dembora maximoa
+        }
+      );
+      console.log(datos);
+    } else {
+      datos.lehenengoAldia = true;
+      datos.birbidali = true;
+      datos.state = "notcapturing";
+      datos.izena = "";
+      datos.testid = 1;
+      datos.dataAll = "  ";
+      console.log(datos);
+    }
+  }
 
   // MongoDB datu-basean datuak gorde (Sortuta ez bada, sortu)
   async function DBanGorde(datos) {
-    // Bilatu erabiltzailea
-    const existingUser = await db.findOne({ erabiltzailea: datos.izena });
     if (datos.izena !== "") {
+      // Bilatu erabiltzailea
+      const existingUser = await db.findOne({
+        erabiltzailea: datos.izena,
+        testid: datos.testid,
+      });
       if (existingUser) {
         // Erabiltzailea existitzen bada, datuak eguneratu
         await db.updateOne(
-          { erabiltzailea: datos.izena },
+          { erabiltzailea: datos.izena, testid: datos.testid },
           {
             $set: {
               data: datos.dataAll,
@@ -94,20 +199,23 @@ fs.readFile("conf.json", "utf8", (err, data) => {
           }
         );
         console.log(`Datuak eguneratuta ${datos.izena} erabiltzailearentzat.`);
+        //console.log(datos.state);
       } else {
         // Ez bada existitzen, sortu erabiltzailea
-
         await db.create({
           erabiltzailea: datos.izena,
           data: datos.dataAll,
           klikop: datos.klikop,
           teklakop: datos.teklakop,
           dembora_segunduetan: datos.dembora_segunduetan,
+          testid: datos.testid,
         });
         console.log(`Erabiltzailea : ${datos.izena} sortuta.`);
+        //console.log(datos.state);
       }
     }
   }
+
   // Noiz hasi den jakinda, denbora segundutan kalkulatzeko funtzioa
   function calcularTiempoPasado(fechaInicio) {
     const ahora = new Date();
@@ -121,33 +229,40 @@ fs.readFile("conf.json", "utf8", (err, data) => {
   }
   //Testari bukaera ematen dion funtzioa
   function bukatu() {
+    cont = cont + 1;
+    console.log(cont);
+
     //Bukaera eman
-    datos.dataAll +=
+    datos.dataAll = datos.dataAll.concat(
       "End" +
       ":" +
       " " +
       datos.izena +
       " " +
+      datos.testid +
+      " " +
       moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
-      "\n";
+      "\n");
 
     datos.dembora_segunduetan = calcularTiempoPasado(inicioTiempo);
-    DBanGorde(datos).then(() => {
-      //Datuak gorde ondoren, datuak reseteatu
-      datos.izena = "";
-      datos.dataAll = "";
-      datos.klikop = 0;
-      datos.teklakop = 0;
-      datos.dembora_segunduetan = 0;
-    });
+
+    console.log("Bukatu " + datos);
+
+    //DBanGord
+
+    DBanGorde(datos);
+
+    console.log("Datuak gordeta");
   }
 
   // POST eskaera bat jaso denean eta /changeState helbidera eginda, hau exekutatuko da (Honek state aldagaia aldatzen du)
   app.post("/changeState", function (req, res) {
+    server.close();
     console.log(req.body);
-    datos.state = req.body.state;
+    //datos.state = req.body.state;
     //Capturing-ea aldatu nahi bada orduan hasierako denbora gorde eta dataAll hasieratu. Gainera dembora maximoa pasatzen bada, bukaerako prozedura egin.
-    if (datos.state === "capturing") {
+    if (req.body.state === "capturing") {
+      datos.state = req.body.state;
       inicioTiempo = new Date();
       datos.dataAll =
         "Start" +
@@ -155,42 +270,42 @@ fs.readFile("conf.json", "utf8", (err, data) => {
         " " +
         datos.izena +
         " " +
+        datos.testid +
+        " " +
         moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
         "\n";
       //despues de un tiempo volver a cambiar el estado
-      timeoutId = setTimeout(() => {
-        console.log("{state: notcapturing}");
-        datos.state = "notcapturing";
-        DBanGorde(datos);
-        bukatu();
-        datos.lehenengoAldia = true;
-        datos.birbidali = true;
-      }, konfigurazio_parametroak.parametroak.dembora_max); //Milisegundoetan
+      // timeoutId = setTimeout(() => {
+      //   console.log("{state: notcapturing}");
+      //   bukatu();
+      //   hurrengoTesta();
+      // }, datos.dembora_max); //Milisegundoetan
       //NotCapturing-ea aldatu nahi bada orduan aldagaiak reseteatu, lehen haitako "kontagailua" (setTimeout) ezabatu, azkeneko datuak gorde eta bukaera egin.
-    } else if (datos.state === "notcapturing") {
-      datos.lehenengoAldia = true;
-      datos.birbidali = true;
-      clearTimeout(timeoutId);
-      DBanGorde(datos);
+    } else if (req.body.state === "notcapturing") {
+      // clearTimeout(timeoutId);
+      //DBanGorde(datos);
       bukatu();
+     // hurrengoTesta();
+      console.log("aaaaaaaaaaaaaaaaaa");
+      //console.log(datos);
     }
-
+    server = app.listen(3000, () => {
+      console.log("Servidor reiniciado y escuchando en el puerto 3000");
+    });
     res.send("Got a POST request");
   });
-
 
   // GET eskaera bat jaso denean eta /getState helbidera eginda, hau exekutatuko da (Honek datos aldagaia bueltatzen du, hau da, zer statean dagoen, zein den izena...)
   app.get("/getState", function (req, res) {
-    res.header("Access-Control-Allow-Origin", "*");
     res.send(datos);
   });
-// POST eskaera bat jaso denean eta /izena helbidera eginda, hau exekutatuko da (Honek izena aldagaia aldatzen du)
+  // POST eskaera bat jaso denean eta /izena helbidera eginda, hau exekutatuko da (Honek izena aldagaia aldatzen du)
   app.post("/izena", function (req, res) {
     datos.izena = req.body.izena;
-    datos.lehenengoAldia = false;
+    datos.lehenengoAldia = true;
     res.send("Got a POST request");
   });
-// POST eskaera bat jaso denean eta /data helbidera eginda, hau exekutatuko da (Honek data aldagaia eguneratzen du et adatu basean eguneratu)
+  // POST eskaera bat jaso denean eta /data helbidera eginda, hau exekutatuko da (Honek data aldagaia eguneratzen du et adatu basean eguneratu)
   app.post("/data", function (req, res) {
     if (req.body.data !== "") {
       if (req.body.klikop) {
@@ -206,17 +321,23 @@ fs.readFile("conf.json", "utf8", (err, data) => {
 
     res.send("Got a POST request");
   });
-// POST eskaera bat jaso denean eta /login helbidera eginda, hau exekutatuko da (Honek login.html fitxategia kargatzen du)
+  // POST eskaera bat jaso denean eta /login helbidera eginda, hau exekutatuko da (Honek login.html fitxategia kargatzen du)
   app.get("/login", function (req, res) {
     res.sendFile(path.join(baseDir + "/login.html"));
   });
-// POST eskaera bat jaso denean eta /popup helbidera eginda, hau exekutatuko da (Honek popup.html fitxategia kargatzen du)
+  // POST eskaera bat jaso denean eta /popup helbidera eginda, hau exekutatuko da (Honek popup.html fitxategia kargatzen du)
   app.get("/popup", function (req, res) {
     res.sendFile(path.join(baseDir + "/popup.html"));
   });
-// POST eskaera bat jaso denean eta /birbidali helbidera eginda, hau exekutatuko da (Honek birbidali aldagaia aldatzen du)
+  // POST eskaera bat jaso denean eta /birbidali helbidera eginda, hau exekutatuko da (Honek birbidali aldagaia aldatzen du)
   app.post("/birbidali", function (req, res) {
-    datos.birbidali = req.body.birbidali;
+    datos.birbidali = req.body.data;
+    console.log("birbidaliserver");
+    res.send("Got a POST request");
+  });
+  app.post("/first", function (req, res) {
+    datos.lehenengoAldia = req.body.data;
+    console.log("firstserver");
     res.send("Got a POST request");
   });
 });
