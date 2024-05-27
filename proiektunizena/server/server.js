@@ -63,6 +63,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     dembora_segunduetan: 0, // Segundu kopurua
     testid: 1, // Testaren identifikadorea
     dembora_max: 0, // Testaren dembora maximoa
+    galdetegia: "", // Testaren galdetegia
   }; // Datuak, hau da, non egin duen klikak eta zer teklak sakatu dituen gordetzeko...
 
   let Laguntzailea = {
@@ -82,9 +83,10 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     dembora_segunduetan: 0, // Segundu kopurua
     testid: 1, // Testaren identifikadorea
     dembora_max: 0, // Testaren dembora maximoa
+    galdetegia: "", // Testaren galdetegia
   }; // Datuak, hau da, non egin duen klikak eta zer teklak sakatu dituen gordetzeko...
 
-  let konfigurazio_parametroak = {};
+  // let konfigurazio_parametroak = {};
   let konfigurazio_parametroak1 = {};
 
   fs.readFile(
@@ -107,6 +109,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
       datos.bukaerako_botoia_class =
         konfigurazio_parametroak.parametroak.bukaerako_botoia_class; // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
       datos.dembora_max = konfigurazio_parametroak.parametroak.dembora_max; // Testaren dembora maximoa
+      datos.galdetegia = konfigurazio_parametroak.parametroak.galdetegia;
     }
   );
 
@@ -151,7 +154,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
 
           //Aldagai printzipala (datu guztiak gordetzeko)
 
-          //datos.state = "capturing"; //notcapturing edo capturing
+          datos.state = "notcapturing"; //notcapturing edo capturing
           // True edo False (Lehenengo aldian sartu den edo ez zehazten du) (Hau plugina lehenengo aldian sartu den ala ez zehazten du)
           datos.klikak = konfigurazio_parametroak1.parametroak.klikak; //True edo False (Egindako Klikak gorde behar diren edo ez zehazten du)
           datos.teklak = konfigurazio_parametroak1.parametroak.teklak; //True edo False (Sakatutako Teklak gorde behar diren edo ez zehazten du)
@@ -167,11 +170,12 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
             konfigurazio_parametroak1.parametroak.bukaerako_botoia_class; // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
           // Segundu kopurua
           datos.dembora_max = konfigurazio_parametroak1.parametroak.dembora_max; // Testaren dembora maximoa
+          datos.galdetegia = konfigurazio_parametroak1.parametroak.galdetegia;
         }
       );
       datos.lehenengoAldia = true;
       datos.dataAll = "";
-      inicioTiempo = new Date();
+
       datos.dataAll =
         "Start" +
         ":" +
@@ -182,14 +186,15 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
         " " +
         moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
         ";\n";
-      datos.birbidali = true // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
+
+      datos.birbidali = true; // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
       datos.klikop = 0; // Klik kopurua
       datos.teklakop = 0; // Tekla kopurua
       datos.dembora_segunduetan = 0;
       timeoutId = setTimeout(() => {
         console.log("{state: notcapturing}");
         bukatu().then(() => {
-        hurrengoTesta();
+          hurrengoTesta();
         });
       }, datos.dembora_max);
     } else {
@@ -197,7 +202,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
       datos.birbidali = true;
       datos.state = "notcapturing";
       datos.izena = "";
-      datos.testid = 1;
+      datos.testid = numberOfTests + 1;
       datos.dataAll = "";
       console.log(datos);
     }
@@ -293,8 +298,8 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     //datos.state = req.body.state;
     //Capturing-ea aldatu nahi bada orduan hasierako denbora gorde eta dataAll hasieratu. Gainera dembora maximoa pasatzen bada, bukaerako prozedura egin.
     if (req.body.state === "capturing") {
-      datos.state = req.body.state;
       inicioTiempo = new Date();
+
       datos.dataAll =
         "Start" +
         ":" +
@@ -305,14 +310,15 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
         " " +
         moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
         "\n";
-
+      datos.state = req.body.state;
       DBanGorde(datos);
 
       //despues de un tiempo volver a cambiar el estado
       timeoutId = setTimeout(() => {
         console.log("{state: notcapturing}");
-        bukatu();
-        hurrengoTesta();
+        bukatu().then(() => {
+          hurrengoTesta();
+        });
       }, datos.dembora_max); //Milisegundoetan
       //NotCapturing-ea aldatu nahi bada orduan aldagaiak reseteatu, lehen haitako "kontagailua" (setTimeout) ezabatu, azkeneko datuak gorde eta bukaera egin.
     } else if (req.body.state === "notcapturing") {
@@ -379,5 +385,16 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     datos.lehenengoAldia = req.body.data;
     console.log("firstserver");
     res.send("Got a POST request");
+  });
+  app.post("/galdetegiaBukatuta", function (req, res) {
+    console.log("galdetegiaBukatuta");
+    console.log(datos.testid);
+    if (datos.testid <= numberOfTests) {
+      inicioTiempo = new Date();
+      datos.lehenengoAldia = true;
+      datos.state = "capturing";
+    } else {
+      datos.testid = 1;
+    }
   });
 });

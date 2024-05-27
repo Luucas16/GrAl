@@ -7,6 +7,7 @@
       "bukaera_puntua": "",
       "hasierako_weba": "https://www.osakidetza.euskadi.eus/portada/",
       "bukaerako_botoia_class" : "https://zitaberria.osakidetza.eus/o22PlamWar/iniciologin.do?idioma=cas",
-      "mongodb": "mongodb://127.0.0.1:27017/GrAl"
+      "mongodb": "mongodb://127.0.0.1:27017/GrAl",
+      "galdetegia" : "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link"
     }
   }

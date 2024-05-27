@@ -30,33 +30,37 @@ setInterval(function () {
       klikop = data.klikop;
       teklakop = data.teklakop;
       testID = data.testid;
+      galdetegia = data.galdetegia;
 
       //hasteko zerbitzariaren aldagaiak lortzen ditugu
-    
+
       //Birbidali true bada, orduan esan nahi du testa bukatu dela eta formularioa bete behar dela. Hau egiteko Google docs-en formularioa ireki
       if (data.birbidali) {
-        data.birbidali = false;
-        fetch(fetch_link + "/birbidali", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            data: data.birbidali,
-          }),
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error(`Network response was not ok: ${res.status}`);
-          }
-          window.location.replace(
-            "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link" //Formularioaren linka
-          );
-          return res.json();
-        });
+        window.location.replace(
+          //Formularioaren linka
+          galdetegia
+        );
+        if (window.location.href === "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform" ) {
+          data.birbidali = false;
 
-        return;
+          fetch(fetch_link + "/birbidali", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              data: data.birbidali,
+            }),
+          }).then((res) => {
+            if (!res.ok) {
+              throw new Error(`Network response was not ok: ${res.status}`);
+            }
+
+            return res.json();
+          });
+        }
       }
-     
+
       //Honek erabiltzailea pluginaren horrira ematen du, lehenengo aldia bada noski
       if (
         data.lehenengoAldia &&
@@ -87,7 +91,6 @@ setInterval(function () {
           }),
         });
       }
-      // }
 
       // Capturing egoeran dagoenean, klikak eta teklak baimendu
       if (data.state === "capturing") {
@@ -116,6 +119,7 @@ setInterval(function () {
           window.location.href.indexOf("https://docs.google.com/forms") !== 0
         ) {
           document.addEventListener("click", handleClick);
+          document.removeEventListener("click", handleClickForms);
         } else {
           document.removeEventListener("click", handleClick);
         }
@@ -131,12 +135,25 @@ setInterval(function () {
         // Capturing egoeran ez dagoenean, ezabatu klikak eta teklaken jasotzea
         document.removeEventListener("click", handleClick);
         document.removeEventListener("keyup", handleKeyUp);
+        document.addEventListener("click", handleClickForms);
       }
     })
     .catch((error) => {
       console.error("Error during fetch:", error);
     });
-}, 500);
+}, 1000);
+
+function handleClickForms(event) {
+  if (event.target.getAttribute("class") === "l4V7wb Fxmcue" || event.target.getAttribute("class") === "NPEfkd RveJvd snByac") {
+    fetch(fetch_link + "/galdetegiaBukatuta", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+  }
+}
 
 //Honek klikak jasotzen ditu, eta datuak gordetzen ditu, gainera klika ez badu nehi zuen botoian eman, gertuen dagoen elementua bilatzen du. Klik kopurua ere gordetzen du
 function handleClick(event) {
@@ -157,7 +174,6 @@ function handleClick(event) {
     ) {
       event.preventDefault();
       console.log("He llegado aqui");
-      
 
       fetch(fetch_link + "/changeState", {
         method: "POST",
@@ -305,10 +321,7 @@ function handleKeyUp(event) {
       throw new Error(`Network response was not ok: ${res.status}`);
     }
     dataAll = "";
-
-    
   });
-  
 }
 //Honek elementu gertuenaren bila egiten du, hau da, elementu bat sakatzen bada, baina ez bada botoi bat, hau egiten du
 function encontrarElementoMasCercano(elementoClicado) {

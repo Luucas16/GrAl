@@ -7,6 +7,8 @@
       "bukaera_puntua": "https://www.donostia.eus/cas/login?service=https%3A%2F%2Fwww.donostia.eus%2FTramites%2Flogin%2Fcas",
       "hasierako_weba": "https://www.donostia.eus/",
       "bukaerako_botoia_class" : "aa14aInit.jsp?lang=eu",
-      "mongodb": "mongodb://127.0.0.1:27017/GrAl"
+      "mongodb": "mongodb://127.0.0.1:27017/GrAl",
+      "galdetegia" : "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform?usp=sf_link"
+
     }
   }
