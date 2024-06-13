@@ -1,6 +1,6 @@
 {
     "parametroak": {
-      "dembora_max": 12000, 
+      "dembora_max": 120000, 
       "klikak": true,
       "teklak": true,
       "nabegazio_librea": true,
