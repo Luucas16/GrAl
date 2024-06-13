@@ -1,14 +1,13 @@
 {
     "parametroak": {
-      "dembora_max": 12000, 
+      "dembora_max": 240000, 
       "klikak": true,
       "teklak": true,
-      "nabegazio_librea": true,
+      "nabegazio_librea": false,
       "bukaera_puntua": "",
-      "hasierako_weba": "https://www.sepe.es",
-      "bukaerako_botoia_class" : "",
+      "hasierako_weba": "http://www.interior.gob.es",
+      "bukaerako_botoia_class" : "boton", 
       "bukaerako_botoia_href" : "", 
       "galdetegia" : "https://forms.gle/te6CTufgvfb63Zkb9"
-
     }
   }

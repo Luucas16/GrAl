@@ -26,6 +26,7 @@ setInterval(function () {
     .then((data) => {
       console.log(data);
       bukaerako_botoia_class = data.bukaerako_botoia_class;
+      bukaerako_botoia_href = data.bukaerako_botoia_href;
       nabigazio_librea = data.nabigazio_librea;
       klikop = data.klikop;
       teklakop = data.teklakop;
@@ -35,30 +36,36 @@ setInterval(function () {
       //hasteko zerbitzariaren aldagaiak lortzen ditugu
 
       //Birbidali true bada, orduan esan nahi du testa bukatu dela eta formularioa bete behar dela. Hau egiteko Google docs-en formularioa ireki
-      if (data.birbidali) {
+      if (
+        data.birbidali &&
+        window.location.href.indexOf("https://docs.google.com/forms") !== 0
+      ) {
         window.location.replace(
           //Formularioaren linka
           galdetegia
         );
-        if (window.location.href === "https://docs.google.com/forms/d/e/1FAIpQLSdlhLhv2jgXX4wAW6nGNuHRZEI5_R9JZ2H8zXhFZlQVYFrWNA/viewform" ) {
-          data.birbidali = false;
+      }
+      if (
+        window.location.href ===
+        "https://docs.google.com/forms/d/e/1FAIpQLSdmyGOmjq4-ryyf9oUL3xCLKHON49bUZN0mX2mybf83Agd9dQ/viewform" && data.birbidali 
+      ) {
+        data.birbidali = false;
 
-          fetch(fetch_link + "/birbidali", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              data: data.birbidali,
-            }),
-          }).then((res) => {
-            if (!res.ok) {
-              throw new Error(`Network response was not ok: ${res.status}`);
-            }
+        fetch(fetch_link + "/birbidali", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: data.birbidali,
+          }),
+        }).then((res) => {
+          if (!res.ok) {
+            throw new Error(`Network response was not ok: ${res.status}`);
+          }
 
-            return res.json();
-          });
-        }
+          return res.json();
+        });
       }
 
       //Honek erabiltzailea pluginaren horrira ematen du, lehenengo aldia bada noski
@@ -75,7 +82,6 @@ setInterval(function () {
       if (
         data.lehenengoAldia &&
         data.state === "capturing" &&
-        !data.nabigazio_librea &&
         window.location.href.indexOf(data.hasierako_weba) !== 0 &&
         window.location.href.indexOf("https://docs.google.com/forms") !== 0
       ) {
@@ -141,10 +147,14 @@ setInterval(function () {
     .catch((error) => {
       console.error("Error during fetch:", error);
     });
-}, 1000);
+}, 500);
 
 function handleClickForms(event) {
-  if (event.target.getAttribute("class") === "l4V7wb Fxmcue" || event.target.getAttribute("class") === "NPEfkd RveJvd snByac") {
+  console.log(event.target.textContent);
+  if (
+    (event.target.getAttribute("class") === "NPEfkd RveJvd snByac" || event.target.getAttribute("class") === "l4V7wb Fxmcue") &&
+    event.target.textContent === "Enviar" || event.targeet.querySelecto('span').textContent === "Enviar" 
+  ) {
     fetch(fetch_link + "/galdetegiaBukatuta", {
       method: "POST",
       headers: {
@@ -166,10 +176,14 @@ function handleClick(event) {
 
     return;
   }
-  if (clickedElement.getAttribute("href") != null) {
+  if (
+    clickedElement.getAttribute("href") != null ||
+    clickedElement.getAttribute("class") != null
+  ) {
     //Ikusi ea klik egiten den bukaerako botoian, eta nabigazio librea ez bada, orduan notCapturing egoerara aldatu
     if (
-      clickedElement.getAttribute("href") === bukaerako_botoia_class &&
+      (clickedElement.getAttribute("href") === bukaerako_botoia_class ||
+        clickedElement.getAttribute("href") === bukaerako_botoia_href) &&
       !nabigazio_librea
     ) {
       event.preventDefault();
@@ -190,7 +204,6 @@ function handleClick(event) {
       return;
     }
   }
-
   if (clickedElement.textContent.length < 40) {
     clickedElementText = clickedElement.textContent;
   } else if (clickedElement.tagName !== "") {

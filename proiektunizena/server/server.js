@@ -7,6 +7,7 @@ var bodyParser = require("body-parser"); //Eskaerak prozesatzeko (JSON, URL-enco
 var cors = require("cors"); // CORS politikak aplikatzeko (Cross-Origin Resource Sharing)
 var moment = require("moment"); //Data eta orduak formatu egokian erakusteko
 const path = require("path"); // login.html eta popup.html fitxategiak kargatzekoq
+const { clear } = require("console");
 
 //////////////////////////////////////////////////////////////////////// Aldagiak ////////////////////////////////////////////////////////////////////
 
@@ -57,6 +58,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     bukaera_puntua: "", // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
     nabigazio_librea: "", // True edo False (Nabigazio libre bada edo ez zehazten du)
     bukaerako_botoia_class: "", // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
+    bukaerako_botoia_href: "",
     birbidali: false, // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
     klikop: 0, // Klik kopurua
     teklakop: 0, // Tekla kopurua
@@ -77,6 +79,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     bukaera_puntua: "", // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
     nabigazio_librea: "", // True edo False (Nabigazio libre bada edo ez zehazten du)
     bukaerako_botoia_class: "", // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
+    bukaerako_botoia_href: "",
     birbidali: false, // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
     klikop: 0, // Klik kopurua
     teklakop: 0, // Tekla kopurua
@@ -108,6 +111,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
         konfigurazio_parametroak.parametroak.nabegazio_librea; // True edo False (Nabigazio libre bada edo ez zehazten du)
       datos.bukaerako_botoia_class =
         konfigurazio_parametroak.parametroak.bukaerako_botoia_class; // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
+      datos. bukaerako_botoia_href = konfigurazio_parametroak.parametroak.bukaerako_botoia_href;
       datos.dembora_max = konfigurazio_parametroak.parametroak.dembora_max; // Testaren dembora maximoa
       datos.galdetegia = konfigurazio_parametroak.parametroak.galdetegia;
     }
@@ -153,8 +157,12 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
           konfigurazio_parametroak1 = JSON.parse(data1);
 
           //Aldagai printzipala (datu guztiak gordetzeko)
-
-          datos.state = "notcapturing"; //notcapturing edo capturing
+          if(konfigurazio_parametroak1.parametroak.galdetegia !== ""){
+            datos.state = "notcapturing"; //notcapturing edo capturing
+          }else{
+            datos.state = "capturing";
+          }
+         
           // True edo False (Lehenengo aldian sartu den edo ez zehazten du) (Hau plugina lehenengo aldian sartu den ala ez zehazten du)
           datos.klikak = konfigurazio_parametroak1.parametroak.klikak; //True edo False (Egindako Klikak gorde behar diren edo ez zehazten du)
           datos.teklak = konfigurazio_parametroak1.parametroak.teklak; //True edo False (Sakatutako Teklak gorde behar diren edo ez zehazten du)
@@ -169,6 +177,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
           datos.bukaerako_botoia_class =
             konfigurazio_parametroak1.parametroak.bukaerako_botoia_class; // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
           // Segundu kopurua
+          datos.bukaerako_botoia_href = konfigurazio_parametroak1.parametroak.bukaerako_botoia_href;          
           datos.dembora_max = konfigurazio_parametroak1.parametroak.dembora_max; // Testaren dembora maximoa
           datos.galdetegia = konfigurazio_parametroak1.parametroak.galdetegia;
         }
@@ -186,18 +195,16 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
         " " +
         moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
         ";\n";
-
+      if(datos.galdetegia !== ""){
       datos.birbidali = true; // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
+      }else{
+        inicioTiempo = new Date();
+        datos.lehenengoAldia = true;
+      }
       datos.klikop = 0; // Klik kopurua
       datos.teklakop = 0; // Tekla kopurua
       datos.dembora_segunduetan = 0;
-      timeoutId = setTimeout(() => {
-        console.log("{state: notcapturing}");
-        bukatu().then(() => {
-          hurrengoTesta();
-        });
-      }, datos.dembora_max);
-    } else {
+     }else {
       datos.lehenengoAldia = true;
       datos.birbidali = true;
       datos.state = "notcapturing";
@@ -245,15 +252,6 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
         //console.log(datos.state);
       }
     }
-  }
-
-  async function lortuTestBatenDatuak(datos) {
-    console.log("Erabiltzailea" + datos.izena + "TestID" + datos.testid);
-    datuBaseanDagoena = await db.findOne({
-      erabiltzailea: datos.izena,
-      testid: datos.testid,
-    });
-    return datuBaseanDagoena;
   }
 
   // Noiz hasi den jakinda, denbora segundutan kalkulatzeko funtzioa
@@ -390,6 +388,13 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     console.log("galdetegiaBukatuta");
     console.log(datos.testid);
     if (datos.testid <= numberOfTests) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        console.log("{state: notcapturing}");
+        bukatu().then(() => {
+          hurrengoTesta();
+        });
+      }, datos.dembora_max);
       inicioTiempo = new Date();
       datos.lehenengoAldia = true;
       datos.state = "capturing";
