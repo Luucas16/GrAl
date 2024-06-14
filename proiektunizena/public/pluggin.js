@@ -2,7 +2,7 @@
 
 /////////////////////////  Aldagien hasieraketa eta ddefinizioa  /////////////////////////
 var dataAll = "";
-var fetch_link = "http://localhost:3000";
+var fetch_link = "http://192.168.1.227:3000";
 var bukaerako_botoia_class = "";
 var nabigazio_librea = false;
 var klikop = 0;
@@ -112,7 +112,7 @@ setInterval(function () {
         data.lehenengoAldia &&
         data.state === "capturing" &&
         window.location.href.indexOf(data.hasierako_weba) !== 0 &&
-        window.location.href.indexOf("https://docs.google.com/forms") !== 0
+        window.location.href.indexOf("https://docs.google.com/forms") !== 0 
       ) {
         window.location.href = data.hasierako_weba;
         data.lehenengoAldia = false;
@@ -135,6 +135,18 @@ setInterval(function () {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({}),
+        });
+
+        window.location.href = data.hasierako_weba;
+        data.lehenengoAldia = false;
+        fetch(fetch_link + "/first", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: data.lehenengoAldia,
+          }),
         });
       }
 
@@ -209,7 +221,7 @@ function handleClick(event) {
       if (bukaerako_botoia_class !== "" && bukaerako_botoia_value !== "") {
         if (
           (clickedElement.getAttribute("value") === bukaerako_botoia_value &&
-            clickedElement.getAttribute("class") === bukaerako_botoia_classl) ||
+            clickedElement.getAttribute("class") === bukaerako_botoia_class) ||
           (clickedElement
             .closest(
               "." +
