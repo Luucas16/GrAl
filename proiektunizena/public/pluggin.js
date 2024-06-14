@@ -2,7 +2,7 @@
 
 /////////////////////////  Aldagien hasieraketa eta ddefinizioa  /////////////////////////
 var dataAll = "";
-var fetch_link = "http://192.168.1.227:3000";
+var fetch_link = "http://localhost:3000";
 var bukaerako_botoia_class = "";
 var nabigazio_librea = false;
 var klikop = 0;
@@ -207,16 +207,22 @@ function handleClick(event) {
   var y = event.clientY;
 
   var clickedElement = event.target;
+
+  // console.log(clickedElement.closest( "." +
+  //   bukaerako_botoia_class +
+  //   "[value=" +
+  //   bukaerako_botoia_value +
+  //   "]"));
   if (clickedElement === null) {
     clickedElement = encontrarElementoMasCercanoSiNecesario(event);
 
     return;
   }
-  if (
-    clickedElement.getAttribute("class") !== null ||
-    clickedElement.getAttribute("value") !== null
-  ) {
+ 
     //Ikusi ea klik egiten den bukaerako botoian, eta nabigazio librea ez bada, orduan notCapturing egoerara aldatu
+
+    console.log(clickedElement.getAttribute("value"));
+    console.log(clickedElement.getAttribute("class"));
     if (!nabigazio_librea) {
       if (bukaerako_botoia_class !== "" && bukaerako_botoia_value !== "") {
         if (
@@ -272,7 +278,7 @@ function handleClick(event) {
         }
       }
     }
-  }
+  
 
   if (clickedElement.textContent.length < 40) {
     clickedElementText = clickedElement.textContent;
