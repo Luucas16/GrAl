@@ -58,7 +58,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     bukaera_puntua: "", // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
     nabigazio_librea: "", // True edo False (Nabigazio libre bada edo ez zehazten du)
     bukaerako_botoia_class: "", // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
-    bukaerako_botoia_href: "",
+    bukaerako_botoia_value: "",
     birbidali: false, // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
     klikop: 0, // Klik kopurua
     teklakop: 0, // Tekla kopurua
@@ -78,8 +78,8 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
     hasierako_weba: "", //Nabigazio ez libre bada zein den hasierkao weba
     bukaera_puntua: "", // Nabigazio ez libre bada zein den bukaera puntuaren URL-a
     nabigazio_librea: "", // True edo False (Nabigazio libre bada edo ez zehazten du)
-    bukaerako_botoia_class: "", // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
-    bukaerako_botoia_href: "",
+    bukaerako_botoia_class: "", // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdin
+    bukaerako_botoia_value: "",
     birbidali: false, // True edo False (Hau true bada, orduan galdetegira birbidali erabiltzailea, bestela ez)
     klikop: 0, // Klik kopurua
     teklakop: 0, // Tekla kopurua
@@ -111,7 +111,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
         konfigurazio_parametroak.parametroak.nabegazio_librea; // True edo False (Nabigazio libre bada edo ez zehazten du)
       datos.bukaerako_botoia_class =
         konfigurazio_parametroak.parametroak.bukaerako_botoia_class; // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
-      datos. bukaerako_botoia_href = konfigurazio_parametroak.parametroak.bukaerako_botoia_href;
+      datos.bukaerako_botoia_value = konfigurazio_parametroak.parametroak.bukaerako_botoia_value;
       datos.dembora_max = konfigurazio_parametroak.parametroak.dembora_max; // Testaren dembora maximoa
       datos.galdetegia = konfigurazio_parametroak.parametroak.galdetegia;
     }
@@ -177,7 +177,7 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
           datos.bukaerako_botoia_class =
             konfigurazio_parametroak1.parametroak.bukaerako_botoia_class; // Nabegazio ez libre bada zein den bukaerako botoiaren propietatea edo beste botoietatik zer den desberdina
           // Segundu kopurua
-          datos.bukaerako_botoia_href = konfigurazio_parametroak1.parametroak.bukaerako_botoia_href;          
+          datos.bukaerako_botoia_value = konfigurazio_parametroak1.parametroak.bukaerako_botoia_value;         
           datos.dembora_max = konfigurazio_parametroak1.parametroak.dembora_max; // Testaren dembora maximoa
           datos.galdetegia = konfigurazio_parametroak1.parametroak.galdetegia;
         }

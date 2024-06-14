@@ -25,13 +25,41 @@ setInterval(function () {
     })
     .then((data) => {
       console.log(data);
+
       bukaerako_botoia_class = data.bukaerako_botoia_class;
-      bukaerako_botoia_href = data.bukaerako_botoia_href;
+      bukaerako_botoia_value = data.bukaerako_botoia_value;
       nabigazio_librea = data.nabigazio_librea;
       klikop = data.klikop;
       teklakop = data.teklakop;
       testID = data.testid;
       galdetegia = data.galdetegia;
+
+      if (bukaerako_botoia_class !== "" && bukaerako_botoia_value !== "") {
+        const elements = document.querySelectorAll(
+          "." +
+            bukaerako_botoia_class +
+            '[value="' +
+            bukaerako_botoia_value +
+            '"]'
+        );
+
+        if (elements.length > 0) {
+          console.log(
+            "Elemento(s) con la clase '" +
+              bukaerako_botoia_class +
+              "' y el valor '" +
+              bukaerako_botoia_value +
+              "' encontrado(s)."
+          );
+          elements.forEach((element) => {
+            console.log(element); // Muestra el elemento encontrado en la consola
+          });
+        } else {
+          console.log(
+            "No se encontró ningún elemento con la clase 'btn-class' y el valor 'buttonValue'."
+          );
+        }
+      }
 
       //hasteko zerbitzariaren aldagaiak lortzen ditugu
 
@@ -47,7 +75,8 @@ setInterval(function () {
       }
       if (
         window.location.href ===
-        "https://docs.google.com/forms/d/e/1FAIpQLSdmyGOmjq4-ryyf9oUL3xCLKHON49bUZN0mX2mybf83Agd9dQ/viewform" && data.birbidali 
+          "https://docs.google.com/forms/d/e/1FAIpQLSdmyGOmjq4-ryyf9oUL3xCLKHON49bUZN0mX2mybf83Agd9dQ/viewform" &&
+        data.birbidali
       ) {
         data.birbidali = false;
 
@@ -97,6 +126,17 @@ setInterval(function () {
           }),
         });
       }
+      var bodyText = document.body.innerText;
+
+      if (bodyText.includes("Thank you for filling the questionnaire.") && data.state !== "capturing") {
+        fetch(fetch_link + "/galdetegiaBukatuta", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        });
+      }
 
       // Capturing egoeran dagoenean, klikak eta teklak baimendu
       if (data.state === "capturing") {
@@ -125,7 +165,7 @@ setInterval(function () {
           window.location.href.indexOf("https://docs.google.com/forms") !== 0
         ) {
           document.addEventListener("click", handleClick);
-          document.removeEventListener("click", handleClickForms);
+          //document.removeEventListener("click", handleClickForms);
         } else {
           document.removeEventListener("click", handleClick);
         }
@@ -141,29 +181,13 @@ setInterval(function () {
         // Capturing egoeran ez dagoenean, ezabatu klikak eta teklaken jasotzea
         document.removeEventListener("click", handleClick);
         document.removeEventListener("keyup", handleKeyUp);
-        document.addEventListener("click", handleClickForms);
+        //document.addEventListener("click", handleClickForms);
       }
     })
     .catch((error) => {
       console.error("Error during fetch:", error);
     });
 }, 500);
-
-function handleClickForms(event) {
-  console.log(event.target.textContent);
-  if (
-    (event.target.getAttribute("class") === "NPEfkd RveJvd snByac" || event.target.getAttribute("class") === "l4V7wb Fxmcue") &&
-    event.target.textContent === "Enviar" || event.targeet.querySelecto('span').textContent === "Enviar" 
-  ) {
-    fetch(fetch_link + "/galdetegiaBukatuta", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    });
-  }
-}
 
 //Honek klikak jasotzen ditu, eta datuak gordetzen ditu, gainera klika ez badu nehi zuen botoian eman, gertuen dagoen elementua bilatzen du. Klik kopurua ere gordetzen du
 function handleClick(event) {
@@ -177,33 +201,67 @@ function handleClick(event) {
     return;
   }
   if (
-    clickedElement.getAttribute("href") != null ||
-    clickedElement.getAttribute("class") != null
+    clickedElement.getAttribute("class") !== null ||
+    clickedElement.getAttribute("value") !== null
   ) {
     //Ikusi ea klik egiten den bukaerako botoian, eta nabigazio librea ez bada, orduan notCapturing egoerara aldatu
-    if (
-      (clickedElement.getAttribute("href") === bukaerako_botoia_class ||
-        clickedElement.getAttribute("href") === bukaerako_botoia_href) &&
-      !nabigazio_librea
-    ) {
-      event.preventDefault();
-      console.log("He llegado aqui");
-
-      fetch(fetch_link + "/changeState", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ state: "notcapturing" }),
-      }).then((res) => {
-        if (!res.ok) {
-          throw new Error(`Network response was not ok: ${res.status}`);
+    if (!nabigazio_librea) {
+      if (bukaerako_botoia_class !== "" && bukaerako_botoia_value !== "") {
+        if (
+          (clickedElement.getAttribute("value") === bukaerako_botoia_value &&
+            clickedElement.getAttribute("class") === bukaerako_botoia_classl) ||
+          (clickedElement
+            .closest(
+              "." +
+                bukaerako_botoia_class +
+                "[value=" +
+                bukaerako_botoia_value +
+                "]"
+            )
+            .getAttribute("value") === bukaerako_botoia_value &&
+            clickedElement
+              .closest(
+                "." +
+                  bukaerako_botoia_class +
+                  "[value=" +
+                  bukaerako_botoia_value +
+                  "]"
+              )
+              .getAttribute("class") === bukaerako_botoia_class)
+        ) {
+          bukaerakoBotoia(event);
+          return;
         }
-        return res.json();
-      });
-      return;
+      } else if (
+        bukaerako_botoia_class !== "" &&
+        bukaerako_botoia_value === ""
+      ) {
+        if (
+          clickedElement.getAttribute("class") === bukaerako_botoia_class ||
+          clickedElement
+            .closest("." + bukaerako_botoia_class)
+            .getAttribute("class") === bukaerako_botoia_class
+        ) {
+          bukaerakoBotoia(event);
+          return;
+        }
+      } else if (
+        bukaerako_botoia_class === "" &&
+        bukaerako_botoia_value !== ""
+      ) {
+        if (
+          clickedElement.getAttribute("value") === bukaerako_botoia_value ||
+          clickedElement
+            .closest('.target[value="' + bukaerako_botoia_value + '"]')
+            .getAttribute("value") === bukaerako_botoia_value
+        ) {
+          bukaerakoBotoia(event);
+          return;
+        }
+      }
     }
   }
+
   if (clickedElement.textContent.length < 40) {
     clickedElementText = clickedElement.textContent;
   } else if (clickedElement.tagName !== "") {
@@ -415,4 +473,23 @@ function encontrarElementoMasCercanoSiNecesario(event) {
   }
 
   return clickedElement;
+}
+
+function bukaerakoBotoia(event) {
+  event.preventDefault();
+  console.log("He llegado aqui");
+
+  fetch(fetch_link + "/changeState", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ state: "notcapturing" }),
+  }).then((res) => {
+    if (!res.ok) {
+      throw new Error(`Network response was not ok: ${res.status}`);
+    }
+    return res.json();
+  });
+  return;
 }
