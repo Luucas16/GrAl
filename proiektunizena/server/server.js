@@ -399,7 +399,11 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
       datos.lehenengoAldia = true;
       datos.state = "capturing";
     } else {
+      console.log(numberOfTests);
+      console.log(datos.testid);
       datos.testid = 1;
+      // datos.state = "notcapturing";
+      // datos.lehenengoAldia = true;
     }
   });
 });
