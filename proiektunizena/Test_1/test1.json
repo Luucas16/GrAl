@@ -1,0 +1,14 @@
+{
+    "parametroak": {
+      "dembora_max": 12000, 
+      "klikak": true,
+      "teklak": true,
+      "nabegazio_librea": true,
+      "bukaera_puntua": "",
+      "hasierako_weba": "https://www.sepe.es",
+      "bukaerako_botoia_class" : "",
+      "bukaerako_botoia_value" : "",
+      "galdetegia" : "https://forms.gle/te6CTufgvfb63Zkb9"
+
+    }
+  }

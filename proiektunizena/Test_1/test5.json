@@ -1,0 +1,13 @@
+{
+    "parametroak": {
+      "dembora_max": 240000, 
+      "klikak": true,
+      "teklak": true,
+      "nabegazio_librea": false,
+      "bukaera_puntua": "https://www.citapreviadnie.es/citaPreviaDni/",
+      "hasierako_weba": "http://www.interior.gob.es",
+      "bukaerako_botoia_class" : "",
+      "bukaerako_botoia_value" : "", 
+      "galdetegia" : "https://forms.gle/te6CTufgvfb63Zkb9"
+    }
+  }

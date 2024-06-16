@@ -1,0 +1,13 @@
+{
+    "parametroak": {
+      "dembora_max": 240000, 
+      "klikak": true,
+      "teklak": true,
+      "nabegazio_librea": false,
+      "bukaera_puntua": "https://www.donostia.eus/ataria/es/web/tramiteak/gizarteekintza-hitzordua",
+      "hasierako_weba": "https://www.donostia.eus/taxo.nsf/fwHome?ReadForm&idioma=cas",
+      "bukaerako_botoia_class" : "",
+      "bukaerako_botoia_value" : "",
+      "galdetegia" : "https://forms.gle/te6CTufgvfb63Zkb9"
+    }
+  }

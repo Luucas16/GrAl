@@ -1,0 +1,13 @@
+{
+  "parametroak": {
+    "dembora_max": 240000, 
+    "klikak": true,
+    "teklak": true,
+    "nabegazio_librea": false,
+    "bukaera_puntua": "",
+    "hasierako_weba": "https://zitaberria.osakidetza.eus/o22PlamWar/iniciologin.do?idioma=cas",
+    "bukaerako_botoia_class" : "boton-general",
+    "bukaerako_botoia_value" : "Confirmar cita",
+    "galdetegia" : "https://forms.gle/te6CTufgvfb63Zkb9"
+  }
+}
