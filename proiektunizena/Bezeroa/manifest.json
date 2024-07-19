@@ -1,0 +1,24 @@
+{
+  "manifest_version": 2,
+  "name": "proiektuizena",
+  "version": "1.0",
+
+  
+
+  "permissions": [
+    "activeTab",
+    "http://*/*",
+    "https://*/*",
+    "storage"
+  ],
+  
+  
+
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+       "js": ["public/pluggin.js", "public/moment.js"]
+    
+    }
+  ]
+}

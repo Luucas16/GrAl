@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Extensión</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        text-align: center;
+        margin: 20px;
+      }
+
+      button {
+        background-color: #4caf50; /* Color verde */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+
+      button:hover {
+        background-color: #45a049; /* Cambia de color al pasar el ratón sobre el botón */
+      }
+    </style>
+    <!-- <script src="popup.js"></script> -->
+  </head>
+  <body>
+    <h1>RemoTest</h1>
+    <p>Aukeratu bat:</p>
+    <h1>Oraingo egoera:</h1>
+    <p id="estado"></p>
+    <button id="miBoton">Ekintzak gordetzen hasi</button>
+    <button id="miBoton2">Ekintzak gordetzez utzi</button>
+    <script>
+      //Momentu egoera eskuratu eta horren arabera botoiak aldatu
+      setInterval(function () {
+        fetch("http://localhost:3000/getState", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`Network response was not ok: ${res.status}`);
+            }
+            return res.json();
+          })
+          .then((data) => {
+            state = data.state;
+
+            
+            if (state === "notcapturing") {
+              document.getElementById("estado").innerHTML =
+                "Ez da informaziorik gordeko";
+            } else if (state === "capturing") {
+              document.getElementById("estado").innerHTML =
+                "Informazioa gordetzen";
+            }
+          })
+          .catch((error) => {
+            console.error("Error during fetch:", error);
+          });
+      }, 500);
+
+      // Botoien funtzioak
+      document.addEventListener("DOMContentLoaded", function () {
+        // Lortu botoiak
+        var boton = document.getElementById("miBoton");
+        var boton2 = document.getElementById("miBoton2");
+
+        // Lehenengo botoia sakatuz gero ekintzak gordetzen hasiko dira
+        boton.addEventListener("click", function () {
+          // Realizar el fetch al hacer clic en el botón
+          fetch("http://localhost:3000/changeState", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ state: "capturing" }),
+          })
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error(`Error en la solicitud: ${res.status}`);
+              }
+              return res.json();
+            })
+            .then((data) => {
+              console.log("Respuesta del servidor:", data);
+            })
+            .catch((error) => {
+              console.error("Error durante el fetch:", error);
+            });
+        });
+        // Bigarren botoia sakatuz gero ekintzak gordetzez utziko dira
+        boton2.addEventListener("click", function () {
+          fetch("http://localhost:3000/changeState", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ state: "notcapturing" }),
+          })
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error(`Error en la solicitud: ${res.status}`);
+              }
+              return res.json();
+            })
+            .then((data) => {
+              console.log("Respuesta del servidor:", data);
+            })
+            .catch((error) => {
+              console.error("Error durante el fetch:", error);
+            });
+        });
+      });
+    </script>
+  </body>
+</html>

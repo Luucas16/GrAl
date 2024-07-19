@@ -1,0 +1,13 @@
+{
+    "parametroak": {
+      "dembora_max": 240000, 
+      "klikak": true,
+      "teklak": true,
+      "nabegazio_librea": false,
+      "bukaera_puntua": "https://zitaberria.osakidetza.eus/o22PlamWar/iniciologin.do?idioma=cas",
+      "hasierako_weba": "https://www.osakidetza.euskadi.eus/portada/",
+      "bukaerako_botoia_class" : "",
+      "bukaerako_botoia_value" : "",
+      "galdetegia" : "https://forms.gle/te6CTufgvfb63Zkb9"
+    }
+  }

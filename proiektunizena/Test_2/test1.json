@@ -1,0 +1,13 @@
+{
+  "parametroak": {
+    "dembora_max": 240000, 
+    "klikak": true,
+    "teklak": true,
+    "nabegazio_librea": false,
+    "bukaera_puntua": "",
+    "hasierako_weba": "https://w6.seg-social.es/ProsaInternetAnonimo/OnlineAccess?ARQ.SPM.ACTION=LOGIN&ARQ.SPM.APPTYPE=SERVICE&ARQ.IDAPP=CPMSWACS&ORGANISMO=M",
+    "bukaerako_botoia_class" : "pr_btnGeneral", 
+    "bukaerako_botoia_value" : "SELECCIONAR_CITA",
+    "galdetegia" : "https://forms.gle/te6CTufgvfb63Zkb9"
+  }
+}

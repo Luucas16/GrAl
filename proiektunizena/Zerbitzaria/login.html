@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Extensión</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        text-align: center;
+        margin: 20px;
+      }
+
+      h1 {
+        color: #4caf50; /* Color verde */
+      }
+
+      input[type="text"] {
+        padding: 10px;
+        margin: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      input[type="submit"] {
+        background-color: #4caf50; /* Color verde */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px;
+        transition: background-color 0.3s;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #45a049; /* Cambia de color al pasar el ratón sobre el botón */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>RemoTest</h1>
+    <form>
+      <input type="text" id="user" name="user" placeholder="Erabiltzailea" />
+      <br />
+      <input type="button" value="Bidali" id="submit" />
+    </form>
+    <script>
+      // Ikusi ea erabiltzailea sartu duen
+      setInterval(function () {
+        fetch("http://localhost:3000/getState", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`Network response was not ok: ${res.status}`);
+            }
+            return res.json();
+          })
+          .then((data) => {
+            izena = data.izena;
+            state = data.state;
+            // Erabiltzailea sartu badu, popup-era bidali
+            if (izena !== "") {
+              window.location.href = "http://localhost:3000/popup";
+            }
+          })
+          .catch((error) => {
+            console.error("Error during fetch:", error);
+          });
+      }, 50);
+      // Bidalketa egin
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .getElementById("submit")
+          .addEventListener("click", function () {
+            var username = document.getElementById("user").value;
+            fetch("http://localhost:3000/izena", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ izena: username }),
+            })
+              .then((res) => {
+                if (!res.ok) {
+                  throw new Error(`Error en la solicitud: ${res.status}`);
+                }
+                return res.json();
+              })
+              .then((data) => {
+                window.location.href = "http://localhost:3000/popup";
+              });
+          });
+      });
+    </script>
+  </body>
+</html>

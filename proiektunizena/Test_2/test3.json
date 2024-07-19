@@ -1,0 +1,13 @@
+{
+  "parametroak": {
+    "dembora_max": 240000, 
+    "klikak": true,
+    "teklak": true,
+    "nabegazio_librea": false,
+    "bukaera_puntua": "",
+    "hasierako_weba": "https://www.citapreviadnie.es/citaPreviaDni/",
+    "bukaerako_botoia_class" : "boton", 
+    "bukaerako_botoia_value" : "Confirmar",
+    "galdetegia" : "https://forms.gle/te6CTufgvfb63Zkb9"
+  }
+}
