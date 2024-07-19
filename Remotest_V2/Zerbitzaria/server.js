@@ -367,11 +367,11 @@ fs.readFile(__dirname + "/test/conf.json", "utf8", (err, data0) => {
   });
   // POST eskaera bat jaso denean eta /login helbidera eginda, hau exekutatuko da (Honek login.html fitxategia kargatzen du)
   app.get("/login", function (req, res) {
-    res.sendFile(path.join(baseDir + "/login.html"));
+    res.sendFile(path.join(baseDir  + "/Zerbitzaria/login.html"));
   });
   // POST eskaera bat jaso denean eta /popup helbidera eginda, hau exekutatuko da (Honek popup.html fitxategia kargatzen du)
   app.get("/popup", function (req, res) {
-    res.sendFile(path.join(baseDir + "/popup.html"));
+    res.sendFile(path.join(baseDir + "/Zerbitzaria/popup.html"));
   });
   // POST eskaera bat jaso denean eta /birbidali helbidera eginda, hau exekutatuko da (Honek birbidali aldagaia aldatzen du)
   app.post("/birbidali", function (req, res) {
